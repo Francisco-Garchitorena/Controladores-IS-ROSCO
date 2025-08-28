@@ -1,0 +1,145 @@
+1/4/2025:
+- La selección de viento por parte del usuario entra en varias áreas del DLC Generator. 
+	- En el nombre de los archivos de viento y de entrada de openfast; en la creación de carpetas donde van ; en la corrida (revisar python_run_dlcs.py);
+03/04/25
+- Pasos para compilar rosco. Installe el mingw siguiendo estos pasos: https://capsis.cirad.fr/capsis/documentation/mingw-installation. El ejecutable lo saque de goolge. 
+- Agregue, también siguiendo esos pasoso, el mingw/bin a las variables de entorno y el C:\MinGW\mingw32\bin también. 
+- En powershell, en el directorio build:  cmake .. -G "MinGW Makefiles" -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_Fortran_COMPILER=x86_64-w64-mingw32-gfortran -DCMAKE_MAKE_PROGRAM=mingw32-make 
+En mi caso el mingw-w64 estaba en C:\Users\fgarchitorena\anaconda3\Library\mingw-w64\bin, y lo tuve que agregar a s variables de entorno. Ahí se encuentran los compiladores requeridos.
+- luego: mingw32-make install
+
+Para agregar la rutina de inercia sintetica, loa gregue en Contollers.F90 como subrutina. 
+Luego defini todas las variables nuevas en ROSCO_Types.F90. 
+Luego en el ReadSetParameters puse lo que había que agregar al DISCON.IN.
+Luego en el DISCON le di CALL Synthetic Inertiac
+Agregue a ROSCO_IO las variables locales
+Agreegue a Rosco_IO subrutina Debug:
+LocalVarOutData(125) = LocalVar%IS_status
+    LocalVarOutData(126) = LocalVar%Pgen_ref
+    LocalVarOutData(127) = LocalVar%OmegaTi
+    LocalVarOutData(128) = LocalVar%IS_ControlMode2
+Cambie cantidad de variables locales a 128
+
+Hice que entre al control de inercia sintetica en lugar de al VS cuando se llega al instante de interés. MNe esta divergiendo. El OmegaTi da 105 rad/s que tiene sentido. Hacer pruebas para ver por que?
+04/04/25
+-El avrswap parece ser el que se encarga de transmitir info del ROSCO a OpenFast. CREO!
+- Since ROSCO is written in Fortran, it does not have a header file in the sense that software written in C might have. DISCON.f90 is the primary file for ROSCO - the entirety of the functions and subroutines are called from the DISCON function. The variable types are allocated in ReadSetParameters.f90.
+-DISCON.dll is the compiled binary file that OpenFAST (or any other simulator) calls to run ROSCO. DISCON.f90 is the “top-level” script in ROSCO that contains the primary DISCON routine. This routine calls all of the internal submodules, functions, etc., that make ROSCO run as it does. Finally, the avrSWAP is an array that is passed between ROSCO and the calling wind turbine simulator (e.g. OpenFAST) containing all of the controller’s inputs/outputs. The structure of the avrSWAP is “bladed-style” - meaning that each entry in the array is consistent with DNV-GL Bladed’s array structure (e.g., avrSWAP(2) contains the time variable, always).
+- Aun no encunero una forma de saber el valor de la potencia aerodinámica con el ROSCO.
+- Probé pasarlo a komega2 y veo que hay un problema: pitchea. La estrategia funciona masomenos bien si apago el pitch.
+- Buscando el error en el control de pitch veo que tanto para kp como para ki, pasa del valor mínimo en OP normal (sacado de la tabla en el DISCON.IN), al valor máximo del DISCON.IN. La obtención de kp y ki la hace mediante interpolación.
+- Buscando el error veo que está en la función del PI, particularmente en el pip%ITerm(Inst). Al activar la inercia sintetica ese termino se pasa de cero a 1.57 (90 grados). 
+Solucionado: Con el fin de facilitarme la implementación, apague el VSController cuando activaba el control de inercia sintettica. Esto (por alguna razón), hizo que al activar el control de pitch, el ultimo valor que tenia el pip%ITerm(Inst) fuese el del VSController, y me saltaba al máximo. Eso hacia que la respuesta del control de pitch incrementara indefinidamente.  Int term pre sat:   19762.485343380278 (el termino de VSController de pip%ITer). Int term post sat:   1.5700000000000001. No entiendo mucho por qué se quedó con ese valor pero debe ser por la forma en la que se comunican los distitnos controladores. 
+- Queda implementada una versión gruesa de Tarnowski con recuperación komega2.
+
+02/07/25: QUIERO SACAR OTRA LOCAL VAR EN EL DEBUG
+- En C:\Users\fgarchitorena\OneDrive - Facultad de Ingeniería\Documentos\GitHub\FSE_2023\Tarnowski_con_estimador_P_mec tengo la versión de Tarnowski on l estimador de potencia para anlizar cosas antes de pasar a ROSCO. 
+- Dejé implementaaado el Tarnowski, con el estimador de potencia.
+- Por ahora me da igual que el komega2, toy viendo de sacar el IS status para ver qué está pasando.
+- En ROSCO_TYPES.F90 agregué la variable isStatus a las DebudVariables. 
+- En la función de Synthettic Inertia, le agregue que me llame a ls DebugVariables y e le tuve que agregar en las entradas de la función.  SyntheticInertia(avrSWAP, CntrPar, LocalVar, DebugVar, objInst, ErrVar)
+- Después tuve que agregar en el DISCON.F90 CALL  SyntheticInertia(avrSWAP, CntrPar, LocalVar, DebugVar, objInst, ErrVar).
+- Después hay que ir a ROSCO_IO y agregar las variables a la subrutina Debug.
+
+03/07/25:
+- Por alguna razon el komega2 me da igual al tarnowski, esto porque en la recuperación esta dándome el torque de tarnowski menor que el komega2, que no tiene sentido. Revisar el estimador de potencia mecánica. 
+- Revisé el SLOW y no estaba obteniendo correctamente el omega_dot, ya que lo sacaba directamente de la ec aerodinámica del sistema. Al hacerlo con la derivada de omega (como en un controlador real), me está dando mal, el Omega_dot tien un cambio brusco, que hace que la P esti,ada baje mucho y la señal de torque da menor que komega2, entonces resuleve por ahi. Probé mirar espectros, el de omega_dot, vi que tiene un piquito en 0.085Hz, y le puse un notch filter para esa frecuencia, funcionó pero solo para esa, entonces el comportamiento casi que noc ambia (el cambio brusco de derivada posterior a este paso se sigue dando). Podría meterlr nothc filters a lo oco pero me parece irreal. no sé muy bien cómo resolver. 
+- Probé implementar el estimador solo cuando arranca la recuperación de Tarnowski, sin embargo no funcionó. En el primer paso omega viejo es mayor a omega nuevo, entonces da negativa la omega_dot, entonces la pmecanica se estima mal y no logra acelerarse como quisiéramos (se va casi enseguida a komega^2).
+10/07/25:
+- Mandé mail a Alejandro alvaro y bruno por el tema del estimador. Alvaro contesto que ponerle un filtro de primer orden para eliminar el ruido de alta frecuencia parece una buena idea. lo probé y anda. Pmec est sigue siendo menor a Prot igual. Y cuando recién empieza la inercia hay un breve transitorio donde pasan cosas raras. 
+11/07/25:
+- Quiero ver cómo implementar todo esto en openfast. 
+- Abrir ROSCO.main/*/controller_FG_2/src/Controller.
+- Para ver las debug varibles tengo un script de jupyter
+- Parece que el problema surge cuando la turbina llega al Fomega_min*Onega_rated. Ahí durante un paso temporal más la Pel sigue sobreproduciendo, esto genera el problema de que cuando cae la potencia en la fase de recuperación, la potencia mecánica estimada cae y la derivada de omega es negativa en ese instante por lo que P_mec_est queda por debajo de Pel en un paso, entonces en sguida se me va a recuperacion komega^2.
+- Saqué la recuperación komega2 como opción para testear solo la recuperación de Tarnowski. Da mucho ruido en la recuperación, probé ponerle un filtro de primer orden con el Tau = 0.7 que en el SLOW andaba bastante bien, pero no está funcionando muy bien con esto, da mucho ruido. Tengo que ver cómo resolver. 
+
+07/08
+- Con el estimador de velocidad, con viento turbulento parece ir bastante bien. Seguir probadno  tarnowski,
+- Probé el escalón de Ontario con rec tarnowski. 
+08/08/25:
+- Agregue una rampa de salida a Tarnowski  hice un estudio de sensibilidad a la rampa con tres tiempos de bajada (0.5, 1, y 2s).
+Veo que no cambia mucho el RMSE de la velocidad predecida contra la real. 
+
+14/08/25:
+- Revisar implementación de Ontario, sobre todo el LocalVar%Omega_TI parece ue se actualiza hasta que sale de la rampa.
+- El Tarnoswki nuestro debería tener la rampa de Ontario.
+- Implementar Wang  y revisar paper
+- Tener en cuenta las restricciones que Tarnowski indica en su tesis.
+
+15/08/25: Comentarios Bruno Torque:
+- por lo que leí hasta el momento, el filtro tiene un par de parámetros que te permiten regular que tan sensible/ruidosa querés que sea la estimación. En nuestro caso quizás nos conviene que sea un poco más sensible, para que pueda seguir más de cerca la transición entre fin de sobreproduccion e inicio de recuperación
+- creo que para ganar tiempo, ahora conviene que te concentres en Wang que parece ser una estrategia más directa de implementar no? Además, Wang ya tiene hecho algún estudio de carga según recuerdo. Entonces creo que lo primero a hacer luego de que la tengas implementada es tratar de replicar alguno de los estudios de carga que hace él y chequear que nos de parecido. Luego, lo natural sería hacer lo mismo para Tarnoski y comparar ambas estrategias. Creo que con eso tenemos suficiente para el abstract. 
+-si, yo creo que como base se puede pensar en algún indicador de performance en cuanto a lo energético, por ej la energía provista durante los primeros 5-10 segundos por cada una de las estrategias, ante las misma condiciones de viento
+ 
+y otro resultado debería venir por el lado estructural, quizas un gráfico de barras donde en el eje de las x tengas los distintos componentes de la turbina y en el eje de las y sería el DEL o quizás mejor el momento máximo registrado en los 10min. 
+ 
+o sea, por cada componente del aerogenerador saldrian dos barritas de distitno color, un color ascociado a cada una de las estrategias
+
+-  Francisco Garchitorena
+Entiendo
+capaz que tendríamos que hacer un grafico con los DELs y otro con Momentos máximos
+ 
+entiendo que este tipo de estrategias, no es para estar actuando todo el tiempo, como las que vimos en WESC, no? Por lo que quizás la fatiga no sea tan relevante y deberíamos preocuparnos más por los esfuerzos máximos. Pero debemos analizar todo y luego seleccionar qué presentar en el abstract. No creo que tengamos espacio para más de dos gráficos. 
+ 
+otra cosa que anoto acá para no olvidarnos, deberíamos prestar no solo atención a la posible excitación de la torre a velocidades de giro bajas, sino también al riesgo que tienen las palas de entrar en stall. Lo digo más pensando en el paper, para el abstract no necesitamos generar tantos resultados supongo
+ - 
+
+
+- Deje Wang implementado. Revisar caída de velocidad de giro de la turbina!! es super alta. Ver ppt de diciembre. 
+- IEA-3.4-130-RWT_Tarnowski_test.outb tiene a tarwnoski ultima version.
+
+16/08_
+- Vi unas comparaciones entre Wang y no wang y parece que el bajonazo de potencia es muy alto. Revisar presentación de Diciembre.
+- Quedó corrida Wang con v=8m/s y TI5%, ver de estudiar los DELs y comparar con paper. 
+
+21/08/25
+
+Energia inyectada en 5 y 10s.
+Mismo resultado para dos turbinas
+AUmento elativo de DELS
+
+Tengo:
+- Wang: IEA 3.4MW y NREL 5MW.
+	- IEA 3.4MW: Tengo v8_TI5, v8_TI10, v9_TI10
+	-NREL 5MW: v8_TI10 y v9-TI10.
+- Tarnowski: IEA 3.4MW -- v8_TI10 --todo. v9_TI10 (solo archivos de entrada).
+		NREL 5MW: v9_TI10
+-Ontario: IEA 3.4MW: v8TI10
+
+-A Bruno le mandé los plots e Wang para la IEA y la NREL con TI10%. Los de Wang son con 5%. 
+- Quizás habría que mandarle los de potencia y velocidad de giro. 
+Martes: con el v9_TI5% de NREL y hacer todos los plots de nuveo. 
+Con la IEA v8 TI5 mandar los plots- 
+
+Mande los plots actualizados para Ti5%. Revisar curvas de potencia y velocidad de giro con esa Ti
+
+26/08/25:
+- Hoy en la mañana mandé resultados de comparación de DELs, máximos y energía inyectada entre estrategias y entre turbinas.
+- Luego arreglé varias cosas:
+	- Corrí todas las simulaciones con komega2 en vez de PI.
+	- Corrí las simulaciones de la NREL con uBEM en vez de BEM.
+- Dejé un excel donde muestro la última ejecución de todas las simulaciones.
+- Debería armar un script para mandar a correr las simulaciones de nuevo en paralelo. 
+- Los resultados que tengo ahora no son iguales a los que tenía de mañana, sospecho que porque cambió la operación normal, con el cambio de controlador. Revisar qué quiero hacer respecto a eso -- Wang con PI no funciona si o si???
+- Deje corriendo NREL 5MW v9_TI10 con PITorque revisar si sigue muriendo. 
+
+27/08/25: reunion interna:
+- Hacer graficos de DELs con varias velocidades en region II con las dos turbinas. Fijando TI: 8%.
+- Hacer gráfico de PvsOmega para ver si los 20s están caynedo donde quiero. La aerodinámica la puedo sacar de los estados estacionarios. 
+- Ver el gráfico con las barritas de energía aerodinámica y energía cinética. Ver que la Pgen*delta_t - E_cinetica = Eareo = Int(Paero en 5s). y si es igual me quedo con la resta. 
+- Ver el TSR y qué pasa con el Cp 
+- Bajar velocidad de giroo---excitación de torre y stall. 
+- Paréntesis TESIS: Me quiero mantener en velocidaddes de giro normales para evitar frecuencias y stall.
+- ¿Qué tan cerca está la frecuencia de excitación de la velocidad nominal?
+- ÁNgulos de ataque, lift etc para ver stall. 
+- primer párrafo: de la necesidad etc ver Boyle-
+- Después hablar un poco de la estrategias: Tarnowski, Wang con algo de lo que diga Boyle. 
+- 
+
+
+
+
+
+
+
