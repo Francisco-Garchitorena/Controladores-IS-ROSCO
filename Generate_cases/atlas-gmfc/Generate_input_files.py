@@ -175,7 +175,7 @@ def generar_fst_file(root_name, root_folder, DLC_folder_name,OriginalDir_OF, Win
     output_filename, destination_dir_Uref = generar_archivo_entrada("fst", root_name,root_folder, DLC_folder_name, OriginalDir_OF, Wind_user_choice, Site_specific_wind, DLC_choice, TurbSim_DLCs, Uref, variables, "", YawAngle, variation_name, sh, TI, seed)
     return output_filename
 
-def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_Start, OriginalDir_OF, Pacc):
+def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_Start, OriginalDir_OF, Pacc, Itim_SI):
     # Modificar el archivo DISCON.in
     # Copy ROSCO input files, into the folder.
     pattern = f"{OriginalDir_OF}/{root_name}_DISCON.*"
@@ -229,7 +229,7 @@ def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_S
                             newline = f"{NewPars[index]}\t ! {ModVars[index]}\n"
                     new_file.write(newline)
         if DLC_choice == 'Wang':
-            NewPars = [4, 57600, Pacc]#,, 1]
+            NewPars = [4, Itim_SI, Pacc]#,, 1]
             ModVars = ['IS_ControlMode', 'Itim_SI', 'Frecovery']#,'VS_ControlMode']
             
             # Read the original content of the file
@@ -246,7 +246,7 @@ def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_S
                             newline = f"{NewPars[index]}\t ! {ModVars[index]}\n"
                     new_file.write(newline)
         elif DLC_choice == 'Tarnowski':
-            NewPars = [1, 57600, Pacc]#,, 1]
+            NewPars = [1, Itim_SI, Pacc]#,, 1]
             ModVars = ['IS_ControlMode', 'Itim_SI', 'Frecovery']#,, 'VS_ControlMode']
             
             # Read the original content of the file

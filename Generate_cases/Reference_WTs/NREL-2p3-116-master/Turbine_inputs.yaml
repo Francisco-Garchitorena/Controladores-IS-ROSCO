@@ -4,7 +4,7 @@
 Wind_Turbine_category: A                                                                           # Turbine category (IEC 61400).
 Class: 3                                                                                           # Turbine turbulence class (IEC 61400).
 Cut_out_speed: 9                                                                                  # Cut-out wind speed.
-Cut_in_speed: 7                                                                                    # Cut-in wind speed.
+Cut_in_speed: 6                                                                                   # Cut-in wind speed.
 Rated_speed: 10                                                                                   # Rated wind speed.
 Vref: 37.5
 H_buje: 90                                                                                        # Turbine hub-height.

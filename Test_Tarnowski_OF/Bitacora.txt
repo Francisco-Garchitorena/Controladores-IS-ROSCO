@@ -137,9 +137,16 @@ Mande los plots actualizados para Ti5%. Revisar curvas de potencia y velocidad d
 - Después hablar un poco de la estrategias: Tarnowski, Wang con algo de lo que diga Boyle. 
 - 
 
+29/08/25: Mande unas simulaciones de la NREL 2.3MW con Pacc 6% (con 4% no estaba recuperando). Las de la NREL5MW tienen Pacc 2%, las de las IEA 4% aunque con 2 funciona también (fue un error mio). 
+- A las sims de la NREL 2.3MW les saque el PS_Mode para ver el pitch. Resulta que para 8m/S está pitcheando. Hablé con Pancho y va por el lado de cuándo llega a la omega nominal (llega rápido).
+- Sacar los plots de nuevo y comparar con resultados de la IEA. 
+- El PS_mode no cambió nada. Ahora apareció un pico en la potencia generada de la nda. No entiendo qué onda.
+- Me aparece un pico de la nada en la simualicon normal con NREL 2.3MW. Mandé otro set con el controlador nuevo PI a ver si es el komega2. 
+- Revisar el tema del rate limit con las diferentes estrategias.
+- 
 
-
-
-
+01/09/25: 
+Idea: mandar todas las simus con TI8% luego todas con TI 5%. 
+Ver el tema del pitch. 
 
 

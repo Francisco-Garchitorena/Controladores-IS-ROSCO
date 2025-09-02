@@ -1,10 +1,10 @@
 #------------------------------------------ATLAS-GMFC USER INPUTS FILE-----------------------------------------------------------------------------------------------#
 
 #------------------------------------FOLDER GENERATION---------------------------------------------#
-RootNameWT: NREL-2p3-116                                                                         # Root name of the wind turbine. Example options: IEA-3.4-130-RWT, NRELOffshrBsline5MW, NREL-2p3-116 
+RootNameWT: IEA-3.4-130-RWT #NREL-2p3-116                                                                         # Root name of the wind turbine. Example options: IEA-3.4-130-RWT, NRELOffshrBsline5MW, NREL-2p3-116 
 OriginalDir_OF: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Generate_cases/Reference_WTs/{RootNameWT}-master/openfast/   # OpenFast reference wind turbine directory   
-DLC_folder_name: Torque_2026_NREL2p3MW                                                                               # Name of the DLC case folder.
-Wind_file_root_name: NREL_2p3                                                  # Wind file root name located in Reference_WTs/*/Wind/{Wind_file_root_name}_.inp. Examples: IEAonshore, NREL_2p3, NREL_5MW
+DLC_folder_name: Torque_2026_IEA3p4MW                                                                               # Name of the DLC case folder.
+Wind_file_root_name: IEAonshore                                                  # Wind file root name located in Reference_WTs/*/Wind/{Wind_file_root_name}_.inp. Examples: IEAonshore, NREL_2p3, NREL_5MW
 Root DLCs folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
 Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_FG_2/build/           # Folder where the controller is located.  
 DLCs:                                                                                                    # DLCs to be generated and analyzed. For generation select all the ones desired. If after generatio the user wishes to analyze only some of them, set the modules flags to False except the post_process one and run the *sh again.
@@ -74,11 +74,11 @@ Time_event_Start: 360                                                           
 Time to initiate transient (s): 360                                               # For EOG select when to start the gust. Useful if user wishes to model, for example, DLC 4.2. In that case, IECWind_Model should be set to EOG. Recommendation: use default.
 Speed_step: 1                                                                     # Step between wind speeds for case generation (1: 4,5,6,...; 2: 4,6,8)
 partition : normal                                                                # Partition used to run the simulation: normal, ute, besteffort. Recommendation: use default.
-sel_nucleos: 2                                                                   # number of jobs to be ran in parallel for simulation (depends on user preference and cluster capacity). 
+sel_nucleos: 4                                                                   # number of jobs to be ran in parallel for simulation (depends on user preference and cluster capacity). 
 
 #------------------------------------------Synthetic inertia----------------------------------#
 Pacc: 0.04
-
+Itim_SI: 57600
 #-------------------------------------------POST-PROCESSING---------------------------------------#
 
 bins: 100                                                                         # Number of bins for DEL method. Recommendation: use default.

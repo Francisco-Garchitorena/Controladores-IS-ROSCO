@@ -101,6 +101,7 @@ num_sd                           = input_data['Number of seeds']                
 partition                        = input_data['partition']                       # Partition used to run the simulations: normal, besteffort, ute.
 yaw_angles_and_weights_dlcs      = input_data['yaw_weights_by_dlc']         # Diccionario de pesos por DLC y ángulo de yaw
 Pacc                             = input_data['Pacc']
+Itim_SI                             = input_data['Itim_SI']
 # Post-process inputs
 Use_Weibull                       = input_data['Use_Weibull']                     # If true, the Weibull distribution will be used to generate the wind speed distribution.
 post_process                      = input_data['post_process']                    # Select whether to post-process results
@@ -254,7 +255,7 @@ if Generate_input_files:
                             output_filename_ED = generar_elastodyn_file(root_name, root_folder, DLC_folder_name, OriginalDir_OF, Wind_user_choice, Site_specific_wind, DLC_choice, TurbSim_DLCs, Uref, RotorSpeed_interp, Pitch_interp, i, YawAngle, variation_name, sh= shear_interp, TI= TI_interp, seed=seeds.index(sd))
                             output_filename_SD, destination_dir_Uref = generar_servodyn_file(root_name, root_folder, controller_folder, DLC_folder_name, OriginalDir_OF, Wind_user_choice, Site_specific_wind, DLC_choice, TurbSim_DLCs, Uref, Min_Gen_Speed, Time_event_Start, Max_Pitch_rate, Pitch_rate, Pitch_interp, RotorSpeed_interp, i, YawAngle, variation_name, sh= shear_interp, TI= TI_interp, seed=seeds.index(sd))
                             generar_fst_file(root_name, root_folder, DLC_folder_name, OriginalDir_OF, Wind_user_choice, Site_specific_wind, DLC_choice, TurbSim_DLCs, Uref, output_filename_ED, output_filename_IN, output_filename_SD, turb_sel, Sim_Time, YawAngle,variation_name, sh= shear_interp, TI= TI_interp,seed=seeds.index(sd))
-                            editar_discon_file(DLC_choice, root_name, destination_dir_Uref, 360, OriginalDir_OF, Pacc)
+                            editar_discon_file(DLC_choice, root_name, destination_dir_Uref, 360, OriginalDir_OF, Pacc, Itim_SI)
                            # Generate_slurm_sbatch_files(DLC_choice, Uref, root_folder,DLC_folder_name,YawAngle,variation_name,seed=seeds.index(sd))
                 else:                                               
                     if DLC_choice in TurbSim_DLCs and Wind_user_choice:         # Case 3.

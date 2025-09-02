@@ -1,3 +1,4 @@
+close all;
 %% === Graficar Energía entre velocidades y estrategias ===
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
 set(gcf,'Color','w');
@@ -33,7 +34,7 @@ for d = 1:length(duraciones)
     ax.FontSize = fontsize;
 end
 
-%exportgraphics(gcf,'Comparacion_Energia_update.png','Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_Energia_update.png',Turbine),'Resolution',300);
 
 
 %% === Graficar DELs absolutos ===
@@ -66,7 +67,7 @@ for vvar = 1:length(variables)
     ax.FontSize = fontsize;
 end
 
-%exportgraphics(gcf,'Comparacion_DEL_update.png','Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_DEL_update.png',Turbine),'Resolution',300);
 
 
 %% === Incremento relativo de DELs respecto a Norm_op ===
@@ -110,7 +111,7 @@ for vvar = 1:length(variables)
     ax.FontSize = fontsize;
 end
 
-%exportgraphics(gcf,'Comparacion_DEL_Increase_update.png','Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_DEL_Increase_update.png',Turbine),'Resolution',300);
 
 %% === Incremento relativo de DELs respecto a Norm_op (barplot por velocidad) ===
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
@@ -159,52 +160,107 @@ for vvar = 1:length(variables)
     ax.FontSize = fontsize;
 end
 sgtitle(sprintf('DELs for each strategy vs wind speed (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
-%exportgraphics(gcf,'Comparacion_DEL_Increase_vsVel.png','Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_DEL_Increase_vsVel.png',Turbine),'Resolution',300);
 
-
-%% === Scatter DELs (relativo a Norm_op) vs Velocidad ===
+%% === Incremento relativo de DELs respecto a Norm_op VS RPM===
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
 set(gcf,'Color','w');
+fontsize = 14;
 
 ref = 'Norm_op';
+op_var = 'RotSpeed';
+rpm_rated =  12.1; %11.75; %13.47; % 
 
 for vvar = 1:length(variables)
     subplot(2,3,vvar)
-    hold on
-    
-    % Para cada estrategia (menos Norm_op), plotear scatter
-    for e = 1:length(estrategias)
-        Estr = estrategias{e};
-        if strcmp(Estr, ref)
-            continue;
-        end
+
+    % Matriz: filas = velocidades, columnas = estrategias (sin la de ref)
+    DEL_matrix = zeros(length(velocidades), length(estrategias)-1);
+    rpm_matrix = zeros(length(velocidades), 1);
+
+    for v = 1:length(velocidades)
+        vel_field = ['V' num2str(velocidades(v))];
+        DEL_ref = DELs.(ref).(vel_field).(variables{vvar});
         
-        y_vals = zeros(1,length(velocidades));
-        for v = 1:length(velocidades)
-            vel_field = ['V' num2str(velocidades(v))];
-            DEL_ref  = DELs.(ref).(vel_field).(variables{vvar});
+        cnt = 1;
+        for e = 1:length(estrategias)
+            Estr = estrategias{e};
+            if strcmp(Estr, ref)
+                continue;
+            end
             DEL_curr = DELs.(Estr).(vel_field).(variables{vvar});
-            
-            y_vals(v) = 100*(DEL_curr - DEL_ref)/DEL_ref;
+            DEL_matrix(v,cnt) = 100*(DEL_curr - DEL_ref)/DEL_ref;
+            cnt = cnt + 1;
         end
-        
-        scatter(velocidades, y_vals, 80, 'filled', 'DisplayName', Estr);
+         rpm_curr = medias.(ref).(['V' num2str(velocidades(v))]).(op_var);
+         rpm_matrix(v,1) = rpm_curr/rpm_rated * 100;
     end
+
     
-    xlabel('Wind speed [m/s]','FontSize',fontsize,'Interpreter','latex');
+    % Etiquetas
+    estr_tags = estrategias;
+    estr_tags(strcmp(estr_tags, ref)) = [];
+    vel_tags = arrayfun(@(v) sprintf('%.1f', v), rpm_matrix, 'UniformOutput', false);
+
+    % Barplot: eje x = velocidad
+    bar(categorical(vel_tags), DEL_matrix, 'grouped');
+    legend(estr_tags,'FontSize',fontsize,'Interpreter','latex','Location','Northwest');
+    
     ylabel('Increase in DEL [\%]','FontSize',fontsize,'Interpreter','latex');
+    xlabel('\% Rated Rotor Speed','FontSize',fontsize,'Interpreter','latex');
     title(varnames{vvar},'FontSize',16,'Interpreter','latex');
     grid on
     ax=gca;
     set(gca,"TickLabelInterpreter","latex");
     ax.FontSize = fontsize;
-    
-    legend('show','Location','NorthWest','Interpreter','latex','FontSize',fontsize);
-    xlim([6 10])
 end
-sgtitle(sprintf('DELs for each strategy vs wind speed (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
+sgtitle(sprintf('DELs for each strategy vs operation point (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_DEL_Increase_vsRPM.png',Turbine),'Resolution',300);
 
-%exportgraphics(gcf,'Scatter_DEL_vs_speed.png','Resolution',300);
+
+% %% === Scatter DELs (relativo a Norm_op) vs Velocidad ===
+% figure('Units','normalized','OuterPosition',[0 0 1 1]); 
+% set(gcf,'Color','w');
+% 
+% ref = 'Norm_op';
+% 
+% for vvar = 1:length(variables)
+%     subplot(2,3,vvar)
+%     hold on
+% 
+%     % Para cada estrategia (menos Norm_op), plotear scatter
+%     for e = 1:length(estrategias)
+%         Estr = estrategias{e};
+%         if strcmp(Estr, ref)
+%             continue;
+%         end
+% 
+%         y_vals = zeros(1,length(velocidades));
+%         for v = 1:length(velocidades)
+%             vel_field = ['V' num2str(velocidades(v))];
+%             DEL_ref  = DELs.(ref).(vel_field).(variables{vvar});
+%             DEL_curr = DELs.(Estr).(vel_field).(variables{vvar});
+% 
+%             y_vals(v) = 100*(DEL_curr - DEL_ref)/DEL_ref;
+%         end
+% 
+%         scatter(velocidades, y_vals, 80, 'filled', 'DisplayName', Estr);
+%     end
+% 
+%     xlabel('Wind speed [m/s]','FontSize',fontsize,'Interpreter','latex');
+%     ylabel('Increase in DEL [\%]','FontSize',fontsize,'Interpreter','latex');
+%     title(varnames{vvar},'FontSize',16,'Interpreter','latex');
+%     grid on
+%     ax=gca;
+%     set(gca,"TickLabelInterpreter","latex");
+%     ax.FontSize = fontsize;
+% 
+%     legend('show','Location','NorthWest','Interpreter','latex','FontSize',fontsize);
+%     xlim([6 10])
+% end
+% sgtitle(sprintf('DELs for each strategy vs wind speed (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
+% 
+% exportgraphics(gcf,sprintf('Imagenes/%s/Scatter_DEL_vs_speed.png',Turbine),'Resolution',300);
 
 %% === Incremento relativo de Máximos respecto a Norm_op ===
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
@@ -248,7 +304,7 @@ for vvar = 1:length(variables)
 end
 sgtitle(sprintf('Max value for each strategy vs wind speed (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
 
-%exportgraphics(gcf,'Comparacion_Max_Increase_update.png','Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s/Comparacion_Max_Increase_update.png',Turbine),'Resolution',300);
 %% === Incremento relativo de Máximos respecto a Norm_op (barplot por velocidad) ===
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
 set(gcf,'Color','w');
@@ -294,4 +350,4 @@ for vvar = 1:length(variables)
     ax.FontSize = fontsize;
 end
 sgtitle(sprintf('Max value for each strategy vs wind speed (TI = 8): %s',Turbine),'FontSize',16,'Interpreter','latex')
-%exportgraphics(gcf,'Comparacion_DEL_Increase_vsVel.png','Resolution',300);
+exportgraphics(gcf, sprintf('Imagenes/%s/Comparacion_Max_Increase_vsVel.png',Turbine),'Resolution',300);

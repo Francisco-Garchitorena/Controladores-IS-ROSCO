@@ -1,10 +1,11 @@
 %close all
+clear all;
 clc
 addpath RainflowAnalysis\
 
 %% Parámetros
-Turbine = "NREL2p3MW"; %"NREL5MW"; %"IEA3p4MW"; %         
-turbine_base_name = "NREL-2p3-116"; %"NRELOffshrBsline5MW"; %"IEA-3.4-130-RWT"; %  
+Turbine =  "NREL5MW"; %"IEA3p4MW"; %  "NREL2p3MW"; %        
+turbine_base_name = "NRELOffshrBsline5MW"; % "IEA-3.4-130-RWT"; %"NREL-2p3-116"; %   
 
 % Velocidades, TI y semilla
 velocidades = [7.0, 8.0, 9.0];
@@ -15,11 +16,13 @@ sd = "sd0";
 estrategias = {'Norm_op','Tarnowski','Wang'};
 
 % Variables a analizar
-variables = {'RootMyb1','RootMxb1','TwrBsMyt','TwrBsMxt', 'LSSGagMya','LSSGagMza'};
-varnames  = {'FlapWise','EdgeWise','ForeAft','SideSide', 'LSSGagMya','LSSGagMza'};
+variables = {'RootMyb1','RootMxb1','TwrBsMyt','TwrBsMxt', 'LSSGagMya','LSSGagMza'};%
+varnames  = {'FlapWise','EdgeWise','ForeAft','SideSide', 'LSSGagMya','LSSGagMza'};%
+op_variables = {'RotSpeed','BldPitch1'};%
+op_varnames  = {'Rotor speed','Blade 1 Pitch'};%
 m_values  = [10, 10, 4, 4, 4, 4];  
 
-dt = 0.01; %0.00625
+dt = 0.01; % 0.00625; % 0.01; %
 % Rango de análisis
 iStart = 60/dt; 
 iEnd   = 660/dt; 
@@ -32,6 +35,7 @@ duraciones = [5, 10]; % [s]
 %% Resultados
 DELs = struct();
 maximos = struct();
+medias = struct();
 energias = struct();
 
 base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
@@ -46,7 +50,7 @@ for v = 1:length(velocidades)
         % Construir path
         file_path = fullfile(base_path, ...
             estrategia, Vstr, TI, sd, ...
-            turbine_base_name + "_" + lower(estrategia) + "_" + Wind_Condition + ".outb");
+            turbine_base_name + "_" + estrategia + "_" + Wind_Condition + ".outb");
         
         fprintf("Procesando: %s\n", file_path);
         
@@ -74,6 +78,23 @@ for v = 1:length(velocidades)
             %vel_field = char(Vstr);
             DELs.(estrategia).(['V' num2str(velocidades(v))]).(var) = DEL;
             maximos.(estrategia).(['V' num2str(velocidades(v))]).(var) = max(Sensor);
+        end
+
+        % --- medias ---
+        for op_var = 1:length(op_variables)
+            var = op_variables{op_var};
+            
+            % Buscar índice correcto
+            idx = find(strcmp(ChanName, var));
+            if isempty(idx)
+                error(['Variable ', var, ' no encontrada en el archivo: ', file_path]);
+            end
+            
+            % Extraer datos
+            Time = tSeries(iStart:iEnd, 1);  
+            Sensor = tSeries(iStart:iEnd, idx);
+           
+            medias.(estrategia).(['V' num2str(velocidades(v))]).(var) = mean(Sensor);
         end
         
         % --- Energía inyectada ---
