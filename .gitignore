@@ -1,9 +1,13 @@
 *.outb
 *.bts
 *.dbg
+*.mat
 *RO.dbg*
 ROSCO-main
 IS_Torque26
 uBEM*
 ubEM*
 *exe
+Post-procesamiento/ubEM_Wang_TODO.mat
+*sum
+*ech
