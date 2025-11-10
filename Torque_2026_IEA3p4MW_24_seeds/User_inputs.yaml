@@ -1,0 +1,168 @@
+#------------------------------------------ATLAS-GMFC USER INPUTS FILE-----------------------------------------------------------------------------------------------#
+
+#------------------------------------FOLDER GENERATION---------------------------------------------#
+RootNameWT: IEA-3.4-130-RWT #NREL-2p3-116                                                                         # Root name of the wind turbine. Example options: IEA-3.4-130-RWT, NRELOffshrBsline5MW, NREL-2p3-116 
+OriginalDir_OF: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Generate_cases/Reference_WTs/{RootNameWT}-master/openfast/   # OpenFast reference wind turbine directory   
+DLC_folder_name: Torque_2026_IEA3p4MW_24_seeds                                                                               # Name of the DLC case folder.
+Wind_file_root_name: IEAonshore                                                  # Wind file root name located in Reference_WTs/*/Wind/{Wind_file_root_name}_.inp. Examples: IEAonshore, NREL_2p3, NREL_5MW
+Root DLCs folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
+Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_FG_2/build/           # Folder where the controller is located.  
+DLCs:                                                                                                    # DLCs to be generated and analyzed. For generation select all the ones desired. If after generatio the user wishes to analyze only some of them, set the modules flags to False except the post_process one and run the *sh again.
+#- Wang                                                                                                    # DLC 1.2: Normal operation with turbulence.
+#- Tarnowski                                                                                                   # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
+- Norm_op                                                                                                  # DLC 2.4l: Power production plus grid loss. (NTM)
+#- 2p4y                                                                                                  # DLC 2.4y: Power production plus extreme yaw error (+- 20º). (NTM)
+#- 4p1                                                                                                   # DLC 4.1: Normal shutdown. (NWP -- NO turbulence)
+#- 3p1                                                                                                   # DLC 3.1: Normal start-up. (NWP -- NO turbulence)
+variation_name: ROSCO_SDTime                                                                             # DLC 4.1: model it with ROSCO or with Pitch Manuevers. Recommendation: use default.
+output_folder: plots2
+
+#------------------------------------------WIND---------------------------------------------------#
+
+IECWind_Model: NWP                                                              # Wind model to use for DLCs 3.1 and 4.1. Recommendation: use default.
+Random turbulence selection: 1                                                  # TURBSIM: Flag to select between changing seeds (=1) or making long simulations (=0) to eliminate the random factor in the incident wind.
+Number of seeds : 24                                                             # TURBSIM: number of seeds to be used.
+Turbulence model: NTM                                                           # TURBSIM: Turbulence model for DLCs 1.2 and 2.1 (IEC 61400). 
+Turbulent wind long window: 3660                                                # TURBSIM: Used if Random Turb. Sel = 0. Long window (1hr).
+Vertical Flow Angle: 0                                                          # TURBSIM: mean vertical angle of the wind, which is constant across the entire grid [deg].
+Horizontal Flow Angle: 0                                                        # TURBSIM: mean horizontal angle of the wind, which is constant across the entire grid [deg].
+TurbSim_DLCs:                                                                   # DLCs whose incident wind is modelled with a TurbSim wind.
+- Wang                                                                                                    # DLC 1.2: Normal operation with turbulence.
+- Tarnowski                                                                                                   # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
+- Norm_op   
+- 6p4
+
+#------------------------------------------Site-specific conditions----------------------------------#
+
+Site_specific_wind: True                                                                      # If true, the user will be able to select the wind speed distribution -- combination of v-TI-sh.
+WindSpeed_SPW: [7.5, 8, 8.5, 9, 9.5]   # See that it coincides with cut_in:speed_step:cut_out   
+TI_SSW: [8,8,8,8,8]
+shear_SSW: [0.20, 0.20, 0.20, 0.20, 0.20] # Shear values to be used for each wind speed bin.
+
+#------------------------------------------Combinations of v-TI-sh----------------------------------#
+
+Wind_user_choice: false                                                           # If true all combinations of TI-sh will be ran.  
+TI_values: [8, 6]  
+shear_values: [-0.20, -0.15]
+
+#------------------------------------------FLAGS FOR USER SELECTION-------------------------------#
+
+#--- MODULES -------------------------------#
+First_time: True                                                                 # If true, the "General" and "Wind "Folder will be created.
+Generate_Wind_files: True                                                        # If true, the wind files will be generated.
+Generate_input_files: True                                                        # If true, the input files will be generated.
+Run_DLCs: False                                                                    # If true OpenFast will be executed for each case. 
+post_process: False                                                                # If true the simulations will be post-processed. Set the characteristics in the "POST-PROCESSING" section. 
+
+#--- POST-PROCESSING AND SIMULATION SELECTIONS -------------------------------#
+Copy_Wind_folder: false                                                           # If user already has a DLCs Wind Folder created, copy it to present directory.
+Created_Wind_folder_path: /clusteruy/home/fgarchitorena/OpenFast/2024             # Only used Copy_Wind_folder = True. Directory where user has the Wind Folder to be copied to the DLC_folder_name.
+Same_seed: True                                                                   # If false, every simulation will have a different seed. If true, only n_seeds will be used.                        
+Use_Weibull: True                                                                 # If true, the Weibull distribution will be used to generate the wind speed distribution.
+save_results_pickle: True                                                         # If true, the post-processed results will be saved as a pickle file. Beware: results can weight up to 8GB.
+mean_or_max_sd_weigh_var: mean                                                    # Select whether to weigh the max values per seed by the mean(max) or by max(max).
+Gen_plot_del_vs_speed: True                                                       # If true, the DELs will be plotted against the wind speed.   
+Gen_plot_pot_vs_speed: True                                                       # If true, the mean power will be plotted against the wind speed.    
+Gen_plot_max_value_var_vs_speed: True                                             # If true, the maximum value of the variables will be plotted against the wind speed.
+Gen_plot_Lifetime_del_comparison: True                                            # If true, the lifetime DELs will be compared.
+
+#------------------------------------------SIMULATION PARAMETERS----------------------------------#
+
+Simulation time: 660                                                              # Total time to be simulated. Recommendation: use default.
+Time Step: default                                                                # Simulation time-step. OpenFast. Default values are for the NREL 5MW, IEA 3.4MW and NREL 2.3MW, if another wind turbine is used please put the time step indicated in the *fst file.
+Time_event_Start: 360                                                             # Select the time for the transient event to start (i.e. Shutdown at 360s). Recommendation: use default.
+Time to initiate transient (s): 360                                               # For EOG select when to start the gust. Useful if user wishes to model, for example, DLC 4.2. In that case, IECWind_Model should be set to EOG. Recommendation: use default.
+Speed_step: 0.5                                                                     # Step between wind speeds for case generation (1: 4,5,6,...; 2: 4,6,8)
+partition : normal                                                                # Partition used to run the simulation: normal, ute, besteffort. Recommendation: use default.
+sel_nucleos: 4                                                                   # number of jobs to be ran in parallel for simulation (depends on user preference and cluster capacity). 
+
+#------------------------------------------Synthetic inertia----------------------------------#
+Pacc: 0.04
+Itim_SI: 57600
+#-------------------------------------------POST-PROCESSING---------------------------------------#
+bins: 100                                                                         # Number of bins for DEL method. Recommendation: use default.
+variables:                                                                        # Variables selected for post-processing (OpenFast names).
+- RootMxb1_[kN-m]                                                                 # EdgeWise Moment.
+- RootMyb1_[kN-m]                                                                 # FlapWise Moment.
+- TwrBsMyt_[kN-m]                                                                 # ForeAft Moment.
+- TwrBsMxt_[kN-m]                                                                 # SideSide Moment.
+- BldPitch1_[deg]                                                                 # First Blade pitch angle
+- RotSpeed_[rpm]                                                                  # Rotor speed                                                                       
+del_variables:                                                                    # Variables selected to get DELs (OpenFast names).
+- RootMxb1_[kN-m]                                                                 # EdgeWise Moment.
+- RootMyb1_[kN-m]                                                                 # FlapWise Moment.
+- TwrBsMyt_[kN-m]                                                                 # ForeAft Moment.
+- TwrBsMxt_[kN-m]                                                                 # SideSide Moment.
+m_values:                                                                         # Wöhler Exponents for each del_variable. 
+  RootMyb1_[kN-m]: 10
+  RotSpeed_[rpm]: 10
+  TwrBsMxt_[kN-m]: 4
+  TwrBsMyt_[kN-m]: 4
+
+k_Weibull : 2                                                                     # Weibull k coeff.
+A_Weibull: 8.47                                                                   # Weibull A coeff. V_ave/(gamma(1+1/k))
+probability_distribution_function:                                                # Used if Use_Weibull = False. Probability distribution function to be used for the wind speed.  
+  5.0: 0.02
+  7.0: 0.05
+  9.0: 0.10
+  11.0: 0.15
+  13.0: 0.03
+  15.0: 0.20
+  17.0: 0.15
+  19.0: 0.12
+  21.0: 0.08
+  23.0: 0.04
+  25.0: 0.06
+
+yaw_weights_by_dlc:                                                               # SET YAW ANGLES HERE. Yaw erros to be simulated for each DLC and its respective Weights. Recommendation: use default.
+  1p2:
+  #  -10: 0.25
+    0: 1
+  #  10: 0.25
+  2p4l:
+    -10: 0.25
+    0: 0.5
+    10: 0.25
+  2p4y:
+    -20: 0.5
+    20: 0.5
+  6p4:
+    -8: 0.5
+    8: 0.5
+  3p1:
+    0: 1.0
+  4p1:
+    0: 1.0
+  Wang:
+    0: 1.0
+  Tarnowski:
+    0: 1.0
+  Norm_op:
+    0: 1.0
+
+
+dlc_with_events:
+  - 3p1
+  - 4p1
+  - 2p4l
+  - 2p4y
+
+n_occ_dlcs:                                                                      # Number of occurrences for each DLC per year for each DLC (2.4y is in hours).
+  #2p4l: 20          # total: 50 ocurrencias al año (ejemplo)                                     
+  2p4y: 50           # 50hs de operación con error de yaw 
+  3p1:
+    5: 50          # 50 veces en cut_in (4.0 m/s por ejemplo)
+    11: 1000       # 1000 veces en Vrated (11.4 m/s)
+    25: 50         # 50 veces en cut_out (25 m/s)
+  4p1:
+    5: 50
+    11: 1000
+    25: 50
+
+del_analysis_window_dlc:                                                         # Window for DEL analysis for each DLC. Recommendation: use default.
+  1p2: 600                                                                       # The window starts at 60s and ends at 660s. The start time is set to avoid the transient part of the simulation. 
+  2p4l: 200                                                                      # The window starts at 280s (80 s befote the event starts--360s) and ends at 560s.
+  2p4y: 600
+  3p1: 200
+  4p1: 200
+  6p4: 600

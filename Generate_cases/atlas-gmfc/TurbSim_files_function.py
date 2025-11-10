@@ -127,7 +127,7 @@ def TurbSim_files_function(Site_specific_wind, interp_TI, interp_sh, Wind_user_c
                         mod_vars = ['RandSeed1','HubHt','AnalysisTime','RefHt','Mean (total) velocity','IECturbc','IEC_WindType','VFlowAng','HFlowAng']
                         modify_turbsim_file(template_path, dest_path, mod_vars, new_vals)
 
-                    Generate_TurbS_slurm_sbatch_files(Uref, Wind_folder, partition, None, None, seed=seed_idx)
+                  #  Generate_TurbS_slurm_sbatch_files(Uref, Wind_folder, partition, None, None, seed=seed_idx)
         elif turb_sel == 0:
             for Uref in vels:
                 if Site_specific_wind:

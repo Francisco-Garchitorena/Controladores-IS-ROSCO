@@ -1,0 +1,115 @@
+%close all
+clear; clc;
+addpath Fatigue_analysis\
+% SCRIPT USADO PARA COMPARAR SERIES TEMPORALES ENTRE ESTRATEGIAS
+% ULTIMO USO: 08/09/25
+
+%% Parámetros
+Turbine = "NREL2p3";
+turbine_base_name = "IEA-3.4-130-RWT";
+
+% Velocidad, TI y semillas (aquí se fija un caso)
+Vstr  = "8.5"; 
+TI    = "TI8.0";
+seed  = "sd0";   % se puede cambiar para otro caso puntual
+Wind_Condition = "v" + Vstr + "_" + TI + "_" + seed;
+
+% Estrategias a comparar
+estrategias = {'Norm_op','Wang', 'Tarnowski'};
+estrategia_names = {'Normal operation','Torque-limit','StepWise'};
+
+% Variables estructurales
+variables   = {'RootMyb1','RootMxb1','TwrBsMyt','TwrBsMxt'};
+varnames    = {'FlapWise','EdgeWise','ForeAft','SideSide'};
+ylabels     = {'[kNm]','[kNm]','[kNm]','[kNm]'};
+
+% Variables operativas
+op_variables = {'GenPwr','GenTq','RtAeroPwr','GenSpeed'};
+op_varnames  = {'Gen Power','Gen Torque','Rotor Power','Gen Speed'};
+op_ylabels   = {'[kW]','[kNm]','[rpm]','[kW]'};
+
+% Intervalo de tiempo para mostrar
+start_end = [340 550]; % [s]
+idx_trans = start_end(1)/0.00625;
+fontsize = 23;
+
+%% Paths de simulación
+base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
+%IEA-3.4-130-RWT_Norm_op_v7.0_TI8.0_sd0
+simulations = cell(1,length(estrategias));
+for e = 1:length(estrategias)
+    estrategia = estrategias{e};
+    simulations{e} = fullfile(base_path, estrategia, Vstr, TI, seed, ...
+        turbine_base_name + "_" + estrategia + "_" + Wind_Condition + ".outb");
+end
+
+%% Leer todos los archivos
+Channels = cell(1,length(simulations));
+ChanName = cell(1,length(simulations));
+
+for s = 1:length(simulations)
+    [Channels{s}, ChanName{s}, ~, ~, ~] = ReadFASTbinary(simulations{s});
+end
+
+save(sprintf('Variables_to_plot_%s_%s.mat',Vstr,seed));
+%% Graficar cargas estructurales
+%load('Variables_to_plot.mat');
+close all;
+figure('Units','normalized','OuterPosition',[0 0 0.5 1], 'Color','w');
+set(gcf,'Color','w');
+%sgtitle(sprintf('Structural Loads: comparison between strategies - %s: v=%s m/s, %s',Turbine,Vstr,seed), ...
+ %   'Interpreter','latex','FontSize',16);
+
+for v = 1:length(variables)
+   % subplot(ceil(length(variables)/2),2,v); hold on;
+    subplot(4,1,v); hold on;
+    for s = 1:length(simulations)
+        idx = find(strcmp(ChanName{s}, variables{v}));
+        plot(Channels{s}(idx_trans:end,1), Channels{s}(idx_trans:end,idx), ...
+            'LineWidth', 1.5, 'DisplayName',estrategia_names{s});
+    end
+    xline(360,'LineWidth',1.5,'LineStyle','--','DisplayName','Start IS');
+    
+   % ylabel([varnames{v} ' ' ylabels{v}], 'Interpreter','latex','FontSize',fontsize);
+       ylabel([varnames{v}], 'Interpreter','latex','FontSize',fontsize);
+
+    grid on; xlim(start_end);
+    set(gca,'TickLabelInterpreter','latex','FontSize',fontsize);
+    if v==1
+        legend('Interpreter','latex','FontSize',fontsize-5,'Location','NorthEast');
+    elseif v == length(variables)
+    xlabel('Time [s]', 'Interpreter','latex','FontSize',fontsize);
+
+    end
+end
+
+exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026/Cargas_comp_estrategias_v%s.png',Vstr), 'Resolution', 300);
+
+%% Graficar variables operativas
+figure('Units','normalized','OuterPosition',[0 0 0.5 1], 'Color','w');
+set(gcf,'Color','w');
+sgtitle(sprintf('Operational Variables: comparison between strategies - %s: v=%s m/s, %s',Turbine,Vstr,seed), ...
+    'Interpreter','latex','FontSize',16);
+
+for v = 1:length(op_variables)
+    %subplot(ceil(length(op_variables)/2),2,v); hold on;
+    subplot(4,1,v);hold on;
+
+    idx = find(strcmp(ChanName{1}, op_variables{v}));
+    
+    for s = 1:length(simulations)
+        plot(Channels{s}(idx_trans:end,1), Channels{s}(idx_trans:end,idx), ...
+            'LineWidth', 1.5, 'DisplayName',estrategia_names{s});
+    end
+    xline(360,'LineWidth',1.5,'LineStyle','--','DisplayName','Start IS');
+    
+    ylabel([op_varnames{v} ' ' op_ylabels{v}], 'Interpreter','latex','FontSize',fontsize);
+    xlabel('Time [s]', 'Interpreter','latex','FontSize',fontsize);
+    grid on; xlim(start_end);
+    set(gca,'TickLabelInterpreter','latex','FontSize',fontsize);
+    if v==1
+        legend('Interpreter','latex','FontSize',fontsize-5,'Location','NorthEast');
+    end
+end
+%%
+exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026/Otras_variables_comp_estrategias_v%s.png',Vstr), 'Resolution', 300);

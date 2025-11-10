@@ -1,3 +1,5 @@
+
+addpath \..\
 %% Cargar RAWS (referencia)
 Get_RAWS; % deja en Disturbance.Ueff.time (t_raws) y Ueff2 (ws_raws) la serie RAWS
 t_raws = Disturbance.Ueff.time;  

@@ -3,14 +3,15 @@
 #------------------------------------FOLDER GENERATION---------------------------------------------#
 RootNameWT: IEA-3.4-130-RWT #NREL-2p3-116                                                                         # Root name of the wind turbine. Example options: IEA-3.4-130-RWT, NRELOffshrBsline5MW, NREL-2p3-116 
 OriginalDir_OF: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Generate_cases/Reference_WTs/{RootNameWT}-master/openfast/   # OpenFast reference wind turbine directory   
-DLC_folder_name: Torque_2026_IEA3p4MW                                                                               # Name of the DLC case folder.
+DLC_folder_name: Torque_2026_IEA3p4MW_24_seeds                                                                              # Name of the DLC case folder.
 Wind_file_root_name: IEAonshore                                                  # Wind file root name located in Reference_WTs/*/Wind/{Wind_file_root_name}_.inp. Examples: IEAonshore, NREL_2p3, NREL_5MW
 Root DLCs folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
-Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_FG_2/build/           # Folder where the controller is located.  
+Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/           # Folder where the controller is located.  
 DLCs:                                                                                                    # DLCs to be generated and analyzed. For generation select all the ones desired. If after generatio the user wishes to analyze only some of them, set the modules flags to False except the post_process one and run the *sh again.
-- Wang                                                                                                    # DLC 1.2: Normal operation with turbulence.
-- Tarnowski                                                                                                   # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
-- Norm_op                                                                                                  # DLC 2.4l: Power production plus grid loss. (NTM)
+#- Wang                                                                                                  # DLC 1.2: Normal operation with turbulence.
+- Tarnowski                                                                                              # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
+#- Norm_op                                                                                               # DLC 2.4l: Power production plus grid loss. (NTM)
+#- GMFC
 #- 2p4y                                                                                                  # DLC 2.4y: Power production plus extreme yaw error (+- 20º). (NTM)
 #- 4p1                                                                                                   # DLC 4.1: Normal shutdown. (NWP -- NO turbulence)
 #- 3p1                                                                                                   # DLC 3.1: Normal start-up. (NWP -- NO turbulence)
@@ -21,23 +22,23 @@ output_folder: plots2
 
 IECWind_Model: NWP                                                              # Wind model to use for DLCs 3.1 and 4.1. Recommendation: use default.
 Random turbulence selection: 1                                                  # TURBSIM: Flag to select between changing seeds (=1) or making long simulations (=0) to eliminate the random factor in the incident wind.
-Number of seeds : 1                                                             # TURBSIM: number of seeds to be used.
+Number of seeds : 24                                                             # TURBSIM: number of seeds to be used.
 Turbulence model: NTM                                                           # TURBSIM: Turbulence model for DLCs 1.2 and 2.1 (IEC 61400). 
 Turbulent wind long window: 3660                                                # TURBSIM: Used if Random Turb. Sel = 0. Long window (1hr).
 Vertical Flow Angle: 0                                                          # TURBSIM: mean vertical angle of the wind, which is constant across the entire grid [deg].
 Horizontal Flow Angle: 0                                                        # TURBSIM: mean horizontal angle of the wind, which is constant across the entire grid [deg].
 TurbSim_DLCs:                                                                   # DLCs whose incident wind is modelled with a TurbSim wind.
-- Wang                                                                                                    # DLC 1.2: Normal operation with turbulence.
-- Tarnowski                                                                                                   # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
+- Wang                                                                          # DLC 1.2: Normal operation with turbulence.
+- Tarnowski                                                                     # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
 - Norm_op   
 - 6p4
-
+- GMFC
 #------------------------------------------Site-specific conditions----------------------------------#
 
 Site_specific_wind: True                                                                      # If true, the user will be able to select the wind speed distribution -- combination of v-TI-sh.
-WindSpeed_SPW: [6, 7, 8, 9]   # See that it coincides with cut_in:speed_step:cut_out   
-TI_SSW: [8,8,8,8]
-shear_SSW: [0.20, 0.20 , 0.20, 0.20] # Shear values to be used for each wind speed bin.
+WindSpeed_SPW: [7.5, 8, 8.5, 9, 9.5]   # See that it coincides with cut_in:speed_step:cut_out   
+TI_SSW: [8,8,8,8,8]
+shear_SSW: [0.20, 0.20, 0.20, 0.20, 0.20] # Shear values to be used for each wind speed bin.
 
 #------------------------------------------Combinations of v-TI-sh----------------------------------#
 
@@ -48,11 +49,11 @@ shear_values: [-0.20, -0.15]
 #------------------------------------------FLAGS FOR USER SELECTION-------------------------------#
 
 #--- MODULES -------------------------------#
-First_time: True                                                                 # If true, the "General" and "Wind "Folder will be created.
-Generate_Wind_files: False                                                        # If true, the wind files will be generated.
+First_time: false                                                                 # If true, the "General" and "Wind "Folder will be created.
+Generate_Wind_files: false                                                        # If true, the wind files will be generated.
 Generate_input_files: True                                                        # If true, the input files will be generated.
-Run_DLCs: False                                                                    # If true OpenFast will be executed for each case. 
-post_process: False                                                                # If true the simulations will be post-processed. Set the characteristics in the "POST-PROCESSING" section. 
+Run_DLCs: True                                                                    # If true OpenFast will be executed for each case. 
+post_process: True                                                                # If true the simulations will be post-processed. Set the characteristics in the "POST-PROCESSING" section. 
 
 #--- POST-PROCESSING AND SIMULATION SELECTIONS -------------------------------#
 Copy_Wind_folder: false                                                           # If user already has a DLCs Wind Folder created, copy it to present directory.
@@ -72,15 +73,15 @@ Simulation time: 660                                                            
 Time Step: default                                                                # Simulation time-step. OpenFast. Default values are for the NREL 5MW, IEA 3.4MW and NREL 2.3MW, if another wind turbine is used please put the time step indicated in the *fst file.
 Time_event_Start: 360                                                             # Select the time for the transient event to start (i.e. Shutdown at 360s). Recommendation: use default.
 Time to initiate transient (s): 360                                               # For EOG select when to start the gust. Useful if user wishes to model, for example, DLC 4.2. In that case, IECWind_Model should be set to EOG. Recommendation: use default.
-Speed_step: 1                                                                     # Step between wind speeds for case generation (1: 4,5,6,...; 2: 4,6,8)
+Speed_step: 0.5                                                                     # Step between wind speeds for case generation (1: 4,5,6,...; 2: 4,6,8)
 partition : normal                                                                # Partition used to run the simulation: normal, ute, besteffort. Recommendation: use default.
 sel_nucleos: 4                                                                   # number of jobs to be ran in parallel for simulation (depends on user preference and cluster capacity). 
 
 #------------------------------------------Synthetic inertia----------------------------------#
 Pacc: 0.04
 Itim_SI: 57600
+Delta_T_over: 10          #Time required by grid operator where kinetic energy is to be injected to the grid.
 #-------------------------------------------POST-PROCESSING---------------------------------------#
-
 bins: 100                                                                         # Number of bins for DEL method. Recommendation: use default.
 variables:                                                                        # Variables selected for post-processing (OpenFast names).
 - RootMxb1_[kN-m]                                                                 # EdgeWise Moment.

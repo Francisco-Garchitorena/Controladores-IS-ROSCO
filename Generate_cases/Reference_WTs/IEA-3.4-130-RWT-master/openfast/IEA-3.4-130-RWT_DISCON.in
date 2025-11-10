@@ -128,6 +128,7 @@
 1		    ! TG		- 1: If GenTq is less than VS_Control Torque, then use VS_Control Torque. 
 11		    ! end_Ontario_step  - Time to end Ontario step (counting the rise). 
 1		    ! dt_rise           - Ramp time for Tarnowski and Ontario. 	
+5           ! Delta_T_over
 !------- Floating -----------------------------------------------------------
 0.000000000000      ! Fl_Kp             - Nacelle velocity proportional feedback gain [s]
 

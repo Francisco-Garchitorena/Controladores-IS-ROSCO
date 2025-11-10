@@ -98,13 +98,13 @@ def generar_inflow_file(root_name,root_folder, DLC_folder_name, OriginalDir_OF, 
     seed_str = f"/sd{seed}" if seed is not None else ""
 
     if Site_specific_wind:
-        Wind_folder = f"Wind/SPW/v{int(Uref)}{sh_str}{TI_str}{seed_str}"
+        Wind_folder = f"Wind/SPW/v{Uref}{sh_str}{TI_str}{seed_str}"
     else:
-        Wind_folder = f"Wind/{TM}/v{int(Uref)}{sh_str}{TI_str}{seed_str}"
+        Wind_folder = f"Wind/{TM}/v{Uref}{sh_str}{TI_str}{seed_str}"
     sh_str_file = f"_sh{sh}_" if Wind_user_choice or Site_specific_wind else ""
     TI_str_file = f"TI{TI}" if Wind_user_choice or Site_specific_wind else ""
     seed_str_file = f"_sd{seed}" if seed is not None else ""
-    Turb_filename = f"{Wind_file_root_name}_{int(Uref)}{sh_str_file}{TI_str_file}{seed_str_file}.bts"
+    Turb_filename = f"{Wind_file_root_name}_{Uref}{sh_str_file}{TI_str_file}{seed_str_file}.bts"
 
     variables = {
         'WindType': 3 if DLC_choice in TurbSim_DLCs else 2,
@@ -175,7 +175,7 @@ def generar_fst_file(root_name, root_folder, DLC_folder_name,OriginalDir_OF, Win
     output_filename, destination_dir_Uref = generar_archivo_entrada("fst", root_name,root_folder, DLC_folder_name, OriginalDir_OF, Wind_user_choice, Site_specific_wind, DLC_choice, TurbSim_DLCs, Uref, variables, "", YawAngle, variation_name, sh, TI, seed)
     return output_filename
 
-def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_Start, OriginalDir_OF, Pacc, Itim_SI):
+def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_Start, OriginalDir_OF, Pacc, Itim_SI, Delta_T_over):
     # Modificar el archivo DISCON.in
     # Copy ROSCO input files, into the folder.
     pattern = f"{OriginalDir_OF}/{root_name}_DISCON.*"
@@ -265,6 +265,23 @@ def editar_discon_file(DLC_choice, root_name, destination_dir_Uref, Time_event_S
         elif DLC_choice == 'Norm_op':
             NewPars = [0, 9999999999]#,, 1]
             ModVars = ['IS_ControlMode', 'Itim_SI']#,, 'VS_ControlMode']
+            
+            # Read the original content of the file
+            with open(DISCON_file, 'r') as original_file:
+                lines = original_file.readlines()
+            
+            # Open the file for writing (overwriting it with modifications)
+            with open(DISCON_file, 'w') as new_file:
+                for line in lines:
+                    newline = line
+                    for index, tmpVar in enumerate(ModVars):
+                        if tmpVar in line:
+                            # Replace the line with the new parameter and a comment
+                            newline = f"{NewPars[index]}\t ! {ModVars[index]}\n"
+                    new_file.write(newline)
+        elif DLC_choice == 'GMFC':
+            NewPars = [5, Itim_SI, Pacc, Delta_T_over]#,, 1]
+            ModVars = ['IS_ControlMode', 'Itim_SI', 'Frecovery', 'Delta_T_over']#,, 'VS_ControlMode']
             
             # Read the original content of the file
             with open(DISCON_file, 'r') as original_file:

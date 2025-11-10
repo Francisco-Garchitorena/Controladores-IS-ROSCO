@@ -2,7 +2,7 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
-def run_openfast_cases(root_folder, DLC_folder_name, root_name, velocidades, DLCs, seeds, TI_SSW, sel_nucleos, turb_sel, TurbSim_DLCs, variation_name, openfast_exe):
+def run_openfast_cases(root_folder, DLC_folder_name, root_name, velocidades, DLCs, seeds,seeds_names, TI_SSW, sel_nucleos, turb_sel, TurbSim_DLCs, variation_name, openfast_exe, TI):
     """
     Función para correr las simulaciones de OpenFAST en paralelo.
     
@@ -42,11 +42,11 @@ def run_openfast_cases(root_folder, DLC_folder_name, root_name, velocidades, DLC
                 print(f"Error al ejecutar la simulación para {fst_path}: {e}")
         else:
             print(f"Archivo .fst no encontrado: {fst_path}")
-    TI = 8
-    # Preparar la lista de argumentos
+    #TI = 8
+    # Preparar la lista de argumentos sd{seeds.index(sd)}
     if turb_sel == 1:
         args_list = [
-            (f'{base_dlc_path}/{dlc}/{vel}/TI{TI}.0/sd{seeds.index(sd)}/{root_name}_{dlc}_v{vel}_TI{TI}.0_sd{seeds.index(sd)}.fst' if dlc in TurbSim_DLCs else
+            (f'{base_dlc_path}/{dlc}/{vel}/TI{TI}.0/{seeds_names[seeds.index(sd)]}/{root_name}_{dlc}_v{vel}_TI{TI}.0_{seeds_names[seeds.index(sd)]}.fst' if dlc in TurbSim_DLCs else
             f'{base_dlc_path}/{dlc}_{variation_name if dlc == "4p1" else ""}/{vel}/{root_name}_{dlc}_{vel}.fst')
             for dlc in DLCs for vel in velocidades for sd in (seeds if dlc in TurbSim_DLCs else [None])
         ]
