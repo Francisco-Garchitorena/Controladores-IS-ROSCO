@@ -188,5 +188,6 @@ True          TabDelim      - Use tab delimiters in text tabular output file? (f
 "TwrBsMxt"
 "TwrBsMyt"
 "TwrBsMzt"
+"RotPwr"
 END
 ---------------------------------------------------------------------------------------

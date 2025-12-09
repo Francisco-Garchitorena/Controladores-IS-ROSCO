@@ -6,8 +6,8 @@ addpath RainflowAnalysis\
 % ULTIMO USO 04/09/25
 
 %% Parámetros
-Turbine =  "IEA3p4MW";
-turbine_base_name = "IEA-3.4-130-RWT";
+Turbine =  "NREL5MW";%"IEA3p4MW";
+turbine_base_name = "NRELOffshrBsline5MW";%"IEA-3.4-130-RWT";
 
 % Velocidades, TI y semillas
 velocidades       = [7.5, 8.0, 8.5, 9.0, 9.5];
@@ -180,4 +180,5 @@ end % velocidades
 
 %%
 %save('DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat')
-save('DELs_Max_means_per_seed_24_seeds_with_AP_dip.mat')
+%save('DELs_Max_means_per_seed_24_seeds_with_AP_dip.mat')
+save('NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat')

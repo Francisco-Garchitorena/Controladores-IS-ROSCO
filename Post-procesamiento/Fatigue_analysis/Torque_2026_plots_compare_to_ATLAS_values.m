@@ -2,7 +2,8 @@
 %clear; clc;
 clear; clc; close all;
 %load DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat
-load DELs_Max_means_per_seed_24_seeds.mat
+%load DELs_Max_means_per_seed_24_seeds.mat
+load DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat
 
 name = '24 seeds';
 %% DELS COMP NORMALIZADO

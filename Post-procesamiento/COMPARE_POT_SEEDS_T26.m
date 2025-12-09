@@ -13,8 +13,8 @@ Vstr  = "8.0";
 TI    = "TI8.0";
 
 % Estrategias a comparar
-estrategias = {'Norm_op','Wang','Tarnowski'};%,'GMFC'};
-estrategia_names = {'Normal operation','Torque-limit','StepWise'};%,'GMFC'};
+estrategias = {'Norm_op','Tarnowski', 'Wang'};%,'GMFC'};
+estrategia_names = {'Normal operation','StepWise','Torque-limit'};%,'GMFC'};
 
 % Variable a graficar (solo potencia)
 op_variable = "GenPwr";   % Potencia generada "RotSpeed";
@@ -31,7 +31,7 @@ base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sint
 
 %% Selección de semillas
 % Puedes elegir manualmente
-selectedSeeds = [0 6 8 19 20 21];   % Ejemplo
+selectedSeeds = [0 4 6 8 13 20];   % Ejemplo
 %selectedSeeds = 0:23;             % Todas las 24 semillas
 %selectedSeeds = [0];
 nSeeds = numel(selectedSeeds);
@@ -70,8 +70,8 @@ for i = 1:nSeeds
             'LineWidth', 2, 'DisplayName',estrategia_names{e});
     end
     xline(360,'LineWidth',1.5,'LineStyle','--','HandleVisibility','off');
-    title(sprintf('Seed %d',sd),'Interpreter','latex','FontSize',fs-4);
-    grid on; xlim(start_end);
+    title(sprintf('Seed %d',sd+1),'Interpreter','latex','FontSize',fs-4);
+    grid on; xlim(start_end); ylim([500 3200])
     set(gca,'TickLabelInterpreter','latex','FontSize',fs-4);
     if i==1
         legend('Interpreter','latex','FontSize',fs-6,'Location','NorthEast');
@@ -85,4 +85,4 @@ ylabel(t, sprintf('%s %s',op_varname,op_ylabel),'Interpreter','latex','FontSize'
  %   'Interpreter','latex','FontSize',16);
  
 %%
-exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026/Comparacion_Potencia_v%s_%s.png',Vstr,TI), 'Resolution', 300);
+exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026/Comparacion_Potencia_v%s_%s_komega2.png',Vstr,TI), 'Resolution', 300);

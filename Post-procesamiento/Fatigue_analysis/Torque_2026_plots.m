@@ -2,8 +2,9 @@
 %clear; clc;
 clear; clc; %close all;
 %load DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat
-load DELs_Max_means_per_seed_24_seeds.mat
-
+%load DELs_Max_means_per_seed_24_seeds.mat
+%load DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat
+load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller;
 name = '24 seeds';
 %% DELS COMP NORMALIZADO
 estrategia_ref = "Norm_op";   % referencia
@@ -101,7 +102,7 @@ end
 
 %exportgraphics(gcf,'Imagenes/Torque_2026/DEL_ponderado_comp_estrategias_norm.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd.png','Resolution',300);
-
+%este: exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd_komega2.png','Resolution',300);
 %% Energia inyectada en 5s respecto a op normal
 clc;
 duracion_user = 100; % segundos de la ventana (puede ser 5 o 10, por ejemplo)
@@ -170,11 +171,12 @@ xlabel('$v$ [m/s]','FontSize',fs_en,'Interpreter','latex');
 %      'FontSize',fs+2,'Interpreter','latex');
 set(gca,'TickLabelInterpreter','latex','FontSize',fs_en);
 %legend('SW','TL','Location','northeast','FontSize',fs-4,'Interpreter','latex');
-legend('SW','TL','GMFC','Location','northeast','FontSize',fs-4,'Interpreter','latex');
+%legend('SW','TL','GMFC','Location','northeast','FontSize',fs-4,'Interpreter','latex');
 
 grid on;
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/Energia_inyectada_%ds_media_seed.png',duracion_user),'Resolution',300);
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/24_semillas/Energia_inyectada_%ds_media_seed_24_sd_WITH_GMFC.png',duracion_user),'Resolution',300);
+%este: exportgraphics(gcf,sprintf('Imagenes/Torque_2026/24_semillas/Energia_inyectada_%ds_media_seed_24_sd_komega2.png',duracion_user),'Resolution',300);
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TEST
@@ -286,6 +288,7 @@ for vvar = 1:nVar
 end
 %exportgraphics(gcf,'Imagenes/Torque_2026/Boxplot_Max_ponderado_comp_estrategias_con_boxplot.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd.png','Resolution',300);
+%exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2.png','Resolution',300);
 
 % % --- Ajuste final: hacer que todas las filas tengan misma altura ---
 % ax_all = findall(gcf,'Type','Axes');

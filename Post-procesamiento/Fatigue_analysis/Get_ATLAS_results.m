@@ -12,7 +12,7 @@
 clear; clc; close all;
 
 %% === CONFIGURACIÓN ===
-archivo = 'ATLAS_IEA3p4MW/Results_summary_IEA_3p4_24seeds.csv'; % <-- cambiar por tu archivo
+archivo = 'ATLAS_IEA3p4MW/Results_summary_KOMEGA2.csv'; %'ATLAS_IEA3p4MW/Results_summary_IEA_3p4_24seeds.csv'; % <-- cambiar por tu archivo
 
 %% === LECTURA DE DATOS ===
 opts = detectImportOptions(archivo, 'Delimiter', ',');
@@ -99,7 +99,7 @@ disp('===== Resumen global por variable =====');
 disp(resumen);
 
 %% === OPCIONAL: GUARDAR A CSV ===
-%writetable(resultados, 'ATLAS_IEA3p4MW_resultados_para_torque26.csv');
+%writetable(resultados, 'ATLAS_IEA3p4MW_resultados_para_torque26_komega2.csv');
 % writetable(resumen, 'Resumen_Global_por_Variable.csv');
 % fprintf('Archivos guardados:\n - Resultados_por_Velocidad.csv\n - Resumen_Global_por_Variable.csv\n');
 

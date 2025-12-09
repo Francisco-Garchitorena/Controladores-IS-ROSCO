@@ -8,9 +8,9 @@ Wind_file_root_name: IEAonshore                                                 
 Root DLCs folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
 Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/           # Folder where the controller is located.  
 DLCs:                                                                                                    # DLCs to be generated and analyzed. For generation select all the ones desired. If after generatio the user wishes to analyze only some of them, set the modules flags to False except the post_process one and run the *sh again.
-#- Wang                                                                                                  # DLC 1.2: Normal operation with turbulence.
+- Wang                                                                                                  # DLC 1.2: Normal operation with turbulence.
 - Tarnowski                                                                                              # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
-#- Norm_op                                                                                               # DLC 2.4l: Power production plus grid loss. (NTM)
+- Norm_op                                                                                               # DLC 2.4l: Power production plus grid loss. (NTM)
 #- GMFC
 #- 2p4y                                                                                                  # DLC 2.4y: Power production plus extreme yaw error (+- 20º). (NTM)
 #- 4p1                                                                                                   # DLC 4.1: Normal shutdown. (NWP -- NO turbulence)
