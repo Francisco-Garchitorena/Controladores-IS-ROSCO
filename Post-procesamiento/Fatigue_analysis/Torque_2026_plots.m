@@ -1,23 +1,24 @@
 %% Script para graficar scatter de Max o DEL vs velocidad
-%clear; clc;
-clear; clc; %close all;
+%clear; clc; -21%
+clear; %clc; close all;
 %load DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat
-%load DELs_Max_means_per_seed_24_seeds.mat
+%load IEA3p4MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat;
 %load DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat
-load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller;
+load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat;
 name = '24 seeds';
 %% DELS COMP NORMALIZADO
+turbine = "NREL5MW"; %"IEA3p4MW";%
 estrategia_ref = "Norm_op";   % referencia
 % estrategias    = [ "Tarnowski","Wang","GMFC"];   % estrategias a comparar
 % estrategia_names = ["Normal operation", "StepWise strategy", "Torque limit strategy", "GMFC"];
 % estrategia_names = ["NO", "SW", "TL","GMFC"];
 estrategias    = [ "Tarnowski","Wang"];   % estrategias a comparar
-estrategia_names = ["Normal operation", "StepWise strategy", "Torque limit strategy"];
+estrategia_names = ["Normal operation", "Stepwise strategy", "Torque-limit strategy"];
 estrategia_names = ["NO", "SW", "TL"];
 
 
 variables = {'RootMyb1','TwrBsMyt','LSSGagMya','RootMxb1','TwrBsMxt','RotTorq'};
-varnames   = {'FlapWise','ForeAft','LSS Bending moment','EdgeWise','SideSide','LSS Torsional moment'};
+varnames   = {'flapwise','fore-aft','LSS bending moment','edgewise','side-side','LSS torsional moment'};
 fs = 22;
 
 % === Cargar resultados ===
@@ -32,7 +33,11 @@ t = tiledlayout(2,3,'TileSpacing','compact','Padding','compact');
 ylims_all = []; % guardamos todos los YLim para unificar
 % % === Encontrar índice de referencia para 8 m/s ===
 velnums_tmp = str2double(strrep(vels,"V","").replace("_","."));
-[~, idx_ref8] = min(abs(velnums_tmp - 8.5));
+
+if Turbine == "IEA3p4MW" 
+    [~, idx_ref8] = min(abs(velnums_tmp - 8.5)); 
+else [~, idx_ref8] = min(abs(velnums_tmp - 9.0)); 
+end
 for vvar = 1:length(variables)
     nexttile;
     var = variables{vvar};
@@ -42,7 +47,7 @@ for vvar = 1:length(variables)
     vals_cmp = nan(length(estrategias), length(vels));
     velnums  = nan(1,length(vels));
     
-    % Recorremos velocidades
+    % Recorremos velocidades+
     for v = 1:length(vels)
         vel_field = vels{v};
         velnum = str2double(strrep(vel_field,"V","").replace("_","."));
@@ -76,7 +81,7 @@ for vvar = 1:length(variables)
         i = i + 1;
     end
     
-    xlim([7.35 9.65]);
+ %   xlim([7.35 9.65]);
     xlabel('$v$ [m/s]','Fontsize',fs,'Interpreter','latex');
     ylabel('$\mathrm{DEL}_{\mathrm{norm}}$ [-]','Fontsize',fs,'Interpreter','latex');
     title(varname,'Fontsize',fs,'Interpreter','latex');
@@ -92,7 +97,7 @@ for vvar = 1:length(variables)
 end
 
 % % --- Unificar altura de todas las filas ---
-% ylim_min_global = min(ylims_all(:,1));
+% ylim_min_global = min(ylims_all(:,1));c
 % ylim_max_global = max(ylims_all(:,2));
 % ax_all = findall(gcf,'Type','Axes');
 % for k = 1:length(ax_all)
@@ -102,7 +107,9 @@ end
 
 %exportgraphics(gcf,'Imagenes/Torque_2026/DEL_ponderado_comp_estrategias_norm.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd.png','Resolution',300);
-%este: exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd_komega2.png','Resolution',300);
+%T26: exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/DEL_ponderado_comp_estrategias_norm_24_sd_komega2.png','Resolution',300);
+
+%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_DEL_ponderado_comp_estrategias_norm_24_sd_komega2_journal.png', turbine),'Resolution',300);
 %% Energia inyectada en 5s respecto a op normal
 clc;
 duracion_user = 100; % segundos de la ventana (puede ser 5 o 10, por ejemplo)
@@ -176,22 +183,10 @@ set(gca,'TickLabelInterpreter','latex','FontSize',fs_en);
 grid on;
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/Energia_inyectada_%ds_media_seed.png',duracion_user),'Resolution',300);
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/24_semillas/Energia_inyectada_%ds_media_seed_24_sd_WITH_GMFC.png',duracion_user),'Resolution',300);
-%este: exportgraphics(gcf,sprintf('Imagenes/Torque_2026/24_semillas/Energia_inyectada_%ds_media_seed_24_sd_komega2.png',duracion_user),'Resolution',300);
+%exportgraphics(gcf,sprintf('Imagenes/Torque_2026_FINAL/Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png', duracion_user),'Resolution',300);
 
+%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png',turbine, duracion_user),'Resolution',300);
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TEST
-%% Variables
-% estrategia_ref = "Norm_op";   % referencia
-% estrategias    = ["Norm_op"];   % estrategias a comparar
-% estrategia_names = ["Normal operation"];
-% estrategia_names = ["NO"];
-% 
-% variables = {'TwrBsMxt'};
-% varnames   = {'SideSide'};
-% fs = 22;
-% 
-% % === Cargar resultados ===
-% vels = fieldnames(DELs_ponderados_seed.(estrategia_ref));  % velocidades disponibles
 %% --- Boxplots por variable y estrategia ajustando alturas ---
 clc;
 figure('Units','normalized','OuterPosition',[0 0 1 1]); 
@@ -216,7 +211,7 @@ for vvar = 1:nVar
     
     title(varname,'FontWeight','bold','Interpreter','latex','FontSize',fs);
     xlabel('$v$ [m/s]','Interpreter','latex','FontSize',fs);
-    ylabel('Extreme value','Interpreter','latex','FontSize',fs);
+    ylabel('Extreme value [kNm]','Interpreter','latex','FontSize',fs);
 
     ylim_min = inf;
     ylim_max = -inf;
@@ -288,198 +283,6 @@ for vvar = 1:nVar
 end
 %exportgraphics(gcf,'Imagenes/Torque_2026/Boxplot_Max_ponderado_comp_estrategias_con_boxplot.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd.png','Resolution',300);
-%exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2.png','Resolution',300);
+%exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png','Resolution',300);
 
-% % --- Ajuste final: hacer que todas las filas tengan misma altura ---
-% ax_all = findall(gcf,'Type','Axes');
-% % Obtener el valor máximo y mínimo de ylim de todos
-% ylims = arrayfun(@(ax) ax.YLim, ax_all, 'UniformOutput', false);
-% ylim_min_global = min(cellfun(@(c) c(1), ylims));
-% ylim_max_global = max(cellfun(@(c) c(2), ylims));
-% for k = 1:length(ax_all)
-%     ax_all(k).YLim = [ylim_min_global ylim_max_global];
-% end
-%sgtitle(name)
-%%
-
-
-% 
-% %%  OLD  09/09/25
-% % === Encontrar índice de referencia para 8 m/s ===
-% velnums_tmp = str2double(strrep(vels,"V","").replace("_","."));
-% [~, idx_ref8] = min(abs(velnums_tmp - 8.5));
-% 
-% % === Plot ===
-% figure('Units','normalized','OuterPosition',[0 0 1 1]);
-% set(gcf,'Color','w'); 
-% tiledlayout(2,3,'TileSpacing','compact');
-% 
-% for vvar = 1:length(variables)
-%     var = variables{vvar};
-%     varname = varnames{vvar};
-% 
-%     vals_ref = nan(1,length(vels));
-%     vals_cmp = nan(length(estrategias), length(vels));
-%     velnums  = nan(1,length(vels));
-% 
-%     % Recorremos velocidades
-%     for v = 1:length(vels)
-%         vel_field = vels{v};
-%         velnum = str2double(strrep(vel_field,"V","").replace("_","."));
-%         velnums(v) = velnum;
-% 
-%         % --- Normal operation (referencia) ---
-%         if isfield(DELs_ponderados_seed.(estrategia_ref).(vel_field), var)
-%             vals_ref(v) = DELs_ponderados_seed.(estrategia_ref).(vel_field).(var);
-%         end
-% 
-%         % --- Estrategias comparadas ---
-%         for e = 1:length(estrategias)
-%             estrategia_cmp = char(estrategias(e));
-%             if isfield(DELs_ponderados_seed.(estrategia_cmp).(vel_field), var)
-%                 vals_cmp(e,v) = DELs_ponderados_seed.(estrategia_cmp).(vel_field).(var);
-%             end
-%         end
-%     end
-% 
-%     % --- Normalización respecto a DEL de operación normal a 8 m/s ---
-%     ref8 = vals_ref(idx_ref8);
-%     vals_ref_norm = vals_ref / ref8;
-%     vals_cmp_norm = vals_cmp / ref8;
-%     % vals_ref_norm = (vals_ref -ref8)*100/ ref8;
-%     % vals_cmp_norm = (vals_cmp-ref8) *100/ ref8;
-%     % --- Plot por variable ---
-%     subplot(2,3,vvar); 
-%     %subplot(6,1,vvar); 
-%     hold on; grid on; box on;
-%     plot(velnums, vals_ref_norm,'-o','LineWidth',1.5,'DisplayName',estrategia_names(1));
-% 
-%     i = 2;
-%     for e = 1:length(estrategias)
-%         plot(velnums, vals_cmp_norm(e,:),'-s','LineWidth',1.5,'DisplayName',estrategia_names(i));
-%         i = i + 1;
-%     end
-% 
-%     xlim([7.35 9.65]);
-%     xlabel('$v$ [m/s]','Fontsize',fs,'Interpreter','latex');
-%     ylabel('$\mathrm{DEL}_{\mathrm{norm}}$ [-]','Fontsize',fs,'Interpreter','latex');
-%     title(varname,'Fontsize',fs,'Interpreter','latex');
-%     set(gca,'TickLabelInterpreter','latex','Fontsize',fs);
-% end
-% 
-% legend('Location','best','Fontsize',fs-3,'Interpreter','latex');
-% %sgtitle("Normalized seed-weighted DELs: Normal operation vs Torque-limit vs StepWise",'Fontsize', fs+2,'Interpreter','latex');
-% 
-% exportgraphics(gcf,'Imagenes/Torque_2026/DEL_ponderado_comp_estrategias_norm.png','Resolution',300);
-% 
-% 
-% %% --- Boxplots por variable y estrategia ---
-% clc;
-% figure('Units','normalized','OuterPosition',[0 0 1 1]); 
-% set(gcf,'Color','w'); 
-% 
-% estrategias      = [ "Norm_op","Tarnowski","Wang"];   % estrategias a comparar
-% %estrategia_names = ["Normal operation", "StepWise strategy", "Torque limit strategy"];
-% nVar = length(variables);
-% t = tiledlayout(2,3,'TileSpacing','compact');
-% colors = lines(length(estrategias)); % colores distintos para estrategias
-% offset = 0.25; % desplazamiento para separar estrategias
-% linewidth = 1.5; % grosor de líneas de boxplot
-% velnums_tmp = str2double(strrep(velocidades_names, "_", "."));
-% 
-% for vvar = 1:nVar
-%     var      = variables{vvar};
-%     varname  = varnames{vvar};
-% 
-%     subplot(2,3,vvar); hold on; grid on; box on;
-%     title(varname,'FontWeight','bold','Interpreter','latex','FontSize',fs);
-%     xlabel('$v$ [m/s]','Interpreter','latex','FontSize',fs);
-%     ylabel('Max. value','Interpreter','latex','FontSize',fs);
-% 
-%     ylim_min = inf;
-%     ylim_max = -inf;
-%     for e = 1:length(estrategias)
-%         estrategia = estrategias{e};
-%         data_vec = [];
-%         group_vec = [];
-% 
-%         for v = 1:length(velocidades)
-%             vel_field = "V" + velocidades_names(v);
-%             seeds_vals = [];
-% 
-%             % Recuperar valores máximos por semilla
-%             for sd = 1:length(seeds)
-%                 sd_field = seeds(sd);
-%                 if isfield(Maxs.(estrategia).(vel_field), sd_field)
-%                     seeds_vals = [seeds_vals, Maxs.(estrategia).(vel_field).(sd_field{1}).(var)];
-%                 end
-%             end
-% 
-%             % Concatenar para boxplot
-%             data_vec  = [data_vec, seeds_vals];
-%             group_vec = [group_vec, repmat(v,1,length(seeds_vals))];
-% 
-%             % Para ajustar ylim
-%             if ~isempty(seeds_vals)
-%                 ylim_min = min([ylim_min, min(seeds_vals)]);
-%                 ylim_max = max([ylim_max, max(seeds_vals)]);
-%             end
-%         end
-% 
-%         % Ajustar posiciones para separar estrategias
-%         positions = unique(group_vec) + (e-2)*offset;
-% 
-%         % Boxplot
-%         % h = boxplot(data_vec, group_vec, 'Positions', positions, 'Colors', colors(e,:), ...
-%         %     'Widths',0.15, 'Symbol','-');
-%         h = boxplot(data_vec, group_vec, ...
-%             'Positions', positions, ...
-%             'Colors', colors(e,:), ...
-%             'Widths', 0.22, ...
-%             'Symbol', 'k-');
-% 
-%         % --- Rellenar las cajas ---
-%         % Encontrar los objetos tipo patch que corresponden a las cajas
-%         boxes = findobj(h, 'Tag', 'Box');
-% 
-%         for j = 1:length(boxes)
-%             patch(get(boxes(j),'XData'), get(boxes(j),'YData'), colors(e,:), ...
-%                 'FaceAlpha', 1, ...     % transparencia (0=transparente, 1=opaco)
-%                 'EdgeColor', 'k'); % mantiene borde con mismo color colors(e,:)
-%         end
-%         % --- Forzar la mediana en negro ---
-%         meds = findobj(h, 'Tag', 'Median');
-%         set(meds, 'Color', 'k', 'LineWidth', 1.5);
-%         % --- Volver a dibujar la mediana por encima ---
-%         for j = 1:length(meds)
-%             xMed = get(meds(j), 'XData');
-%             yMed = get(meds(j), 'YData');
-%             plot(xMed, yMed, 'k-', 'LineWidth', 1.5);   % fuerza mediana negra visible
-%         end
-%         % Aumentar linewidth de todas las líneas del boxplot
-%         set(h, 'LineWidth', linewidth);
-%     end
-%     set(gca,'XTick',1:length(velocidades),'XTickLabel',velnums_tmp, 'FontSize', fs,'TickLabelInterpreter','latex');
-%     ylim([ylim_min*0.95, ylim_max*1.05]); % dejar margen visual
-%     if vvar == 1
-%         hold on;
-%         lgd_handles = gobjects(length(estrategias),1);
-%         for e = 1:length(estrategias)
-%             lgd_handles(e) = plot(NaN, NaN, 's', 'MarkerFaceColor', colors(e,:), 'MarkerEdgeColor', colors(e,:));
-%         end
-%         legend(lgd_handles, estrategia_names, 'Location', 'best', 'Interpreter', 'latex');
-%     end
-% end
-% 
-% % annotation('textbox',[0 0.95 1 0.05], ...
-% %            'String',"Seeds maximum value: Normal operation vs Torque-limit str. vs StepWise str.", ...
-% %            'FontSize',fs+2,'Interpreter','latex','HorizontalAlignment','center', ...
-% %            'VerticalAlignment','middle','EdgeColor','none','FontWeight','bold');
-% % hold on
-% % for e = 1:length(estrategias)
-% %     plot(nan, nan, 'Color', colors(e,:), 'LineWidth', 2,'DisplayName',estrategia_names{e}); % líneas invisibles para la leyenda
-% % end
-% % legend('Location','best','Fontsize',fs-3,'Interpreter','latex');
-% 
-% 
-% exportgraphics(gcf,'Imagenes/Torque_2026/Boxplot_Max_ponderado_comp_estrategias_con_boxplot.png','Resolution',300);
+%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);

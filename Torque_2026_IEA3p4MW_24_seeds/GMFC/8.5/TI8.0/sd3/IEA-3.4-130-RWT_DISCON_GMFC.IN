@@ -8,7 +8,7 @@
 1                   ! F_LPFType			- {1: first-order low-pass filter, 2: second-order low-pass filter}, [rad/s] (currently filters generator speed and pitch control signals
 0                   ! F_NotchType		- Notch on the measured generator speed and/or tower fore-aft motion (for floating) {0: disable, 1: generator speed, 2: tower-top fore-aft motion, 3: generator speed and tower-top fore-aft motion}
 0                   ! IPC_ControlMode	- Turn Individual Pitch Control (IPC) for fatigue load reductions (pitch contribution) {0: off, 1: 1P reductions, 2: 1P+2P reductions}
-2                   ! VS_ControlMode	- Generator torque control mode in above rated conditions {0: constant torque, 1: constant power, 2: TSR tracking PI control with constant torque, 3: TSR tracking PI control with constant power}
+1                   ! VS_ControlMode	- Generator torque control mode in above rated conditions {0: constant torque, 1: constant power, 2: TSR tracking PI control with constant torque, 3: TSR tracking PI control with constant power}
 0                   ! VS_ConstPower  	- Do constant power torque control, where above rated torque varies, 0 for constant torque}
 1                   ! PC_ControlMode    - Blade pitch control mode {0: No pitch, fix to fine pitch, 1: active PI blade pitch control}
 0                   ! Y_ControlMode		- Yaw control mode {0: no yaw control, 1: yaw rate control, 2: yaw-by-IPC}
@@ -89,7 +89,7 @@
 97.0                ! WE_GearboxRatio	- Gearbox ratio [>=1],  [-]
 28756898.13816       ! WE_Jtot			- Total drivetrain inertia, including blades, hub and casted generator inertia to LSS, [kg m^2]
 1.225               ! WE_RhoAir			- Air density, [kg m^-3]
-"C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_IEA3p4MW_24_seeds/GMFC/8.5/TI8.0//sd3\IEA-3.4-130-RWT_Cp_Ct_Cq.txt"	 ! PerfFileName
+"E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_IEA3p4MW_24_seeds/GMFC/8.5/TI8.0//sd3\IEA-3.4-130-RWT_Cp_Ct_Cq.txt"	 ! PerfFileName
 20      20          ! PerfTableSize     - Size of rotor performance tables, first number refers to number of blade pitch angles, second number referse to number of tip-speed ratios
 60                  ! WE_FOPoles_N      - Number of first-order system poles used in EKF
 3.0000 3.2367 3.4733 3.7100 3.9466 4.1833 4.4200 4.6566 4.8933 5.1299 5.3666 5.6033 5.8399 6.0766 6.3132 6.5499 6.7866 7.0232 7.2599 7.4965 7.7332 7.9699 8.2065 8.4432 8.6799 8.9165 9.1532 9.3898 9.6265 9.8632 10.3677 10.8723 11.3768 11.8814 12.3860 12.8905 13.3951 13.8996 14.4042 14.9088 15.4133 15.9179 16.4225 16.9270 17.4316 17.9361 18.4407 18.9453 19.4498 19.9544 20.4589 20.9635 21.4681 21.9726 22.4772 22.9818 23.4863 23.9909 24.4954 25.0000               ! WE_FOPoles_v      - Wind speeds corresponding to first-order system poles [m/s]

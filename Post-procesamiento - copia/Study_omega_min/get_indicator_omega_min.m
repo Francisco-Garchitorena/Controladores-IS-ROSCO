@@ -1,0 +1,175 @@
+% Study the minimum rotational speed allowed for the stepwise strategy 
+close all
+clear; clc;
+addpath ..\
+addpath ..\Fatigue_analysis
+addpath ..\Fatigue_analysis\RainflowAnalysis\
+
+% SCRIPT USADO PARA OBTENER LOS INDICADORES POR SEMILLA PARA LA IEA 3.4MW   
+% ULTIMO USO 06/10/25
+
+%% Parámetros
+Turbine =  "IEA3p4MW";
+turbine_base_name = "IEA-3.4-130-RWT";
+
+% Velocidades, TI y semillas
+velocidades       = [ 8.5];
+velocidades_names = [ "8_5"];
+TI     = "TI8.0";
+%CFG 10/09/25:
+%seeds  = ["sd0","sd1","sd2","sd3","sd4","sd5","sd6","sd7","sd8","sd9","sd10","sd11"];
+%seeds  = ["sd0","sd1","sd2"];
+seeds  = ["50","70","80"];
+names = ["om50","om70","om80"];
+
+% Estrategias
+estrategias = {'Tarnowski'};
+
+% Variables a analizar
+variables  = {'RootMyb1','RootMxb1','TwrBsMyt','TwrBsMxt','LSSGagMya','LSSGagMza','RotTorq'};
+varnames   = {'FlapWise','ForeAft','LSS Moment y-axis','EdgeWise','SideSide','LSS Moment z-axis','LSS Moment x-axis'};
+% variables  = {'TwrBsMxt','LSSGagMya','LSSGagMza','RotTorq'};
+% varnames   = {'FlapWise','ForeAft','LSS Moment y-axis','EdgeWise','SideSide','LSS Moment z-axis','LSS Moment x-axis'};
+op_variables  = {'RotSpeed','BldPitch1'};
+op_varnames   = {'Rotor speed','Blade 1 Pitch'};
+m_values   = [10, 10, 4, 4, 4, 4,4];  % pendiente S-N por variable
+
+dt = 0.00625;
+iStart = 60/dt;
+iEnd   = 660/dt;
+EqvFreq = 1;
+
+% Ventanas de energía de inercia
+t_inercia  = 360; % [s]
+duraciones = [5, 10, 100]; % [s]
+
+%% Resultados
+DELs  = struct();                % por semilla
+Maxs  = struct();                % por semilla
+Medias   = struct();             % por semilla (op vars)
+Energias = struct();             % por semilla
+
+% Agregados ponderados por semilla (promedio generalizado con exponente m)
+DELs_ponderados_seed  = struct();
+Maxs_ponderados_seed  = struct();
+
+base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Test_omega_min";
+
+for v = 1:length(velocidades)
+    Vstr      = sprintf("%.1f", velocidades(v));
+    vel_field = "V" + velocidades_names(v);   % <-- nombre de campo seguro
+    
+    for e = 1:length(estrategias)
+        estrategia = estrategias{e};
+
+        % Buffers para agregar luego por semillas
+        % (guardamos en arrays para hacer el promedio generalizado)
+        DEL_buffer = containers.Map;   % key: var, value: vector de DELs por semilla
+        MAX_buffer = containers.Map;   % key: var, value: vector de Max por semilla
+        for vvar = 1:length(variables)
+            DEL_buffer(variables{vvar}) = []; %#ok<*SAGROW>
+            MAX_buffer(variables{vvar}) = [];
+        end
+
+        for sd = 1:length(seeds)
+            sd_str   = seeds(sd);
+%            sd_field = sd_str;          % nombre de campo por semilla
+            sd_field = names(sd);   
+            
+            Wind_Condition = "v" + Vstr + "_" + TI + "_" + sd_str;  % etiqueta de viento
+
+            % Path
+            file_path = fullfile(base_path, ...
+                estrategia, Vstr, TI, sd_str, ...
+                turbine_base_name + "_" + estrategia + "_" + Wind_Condition + ".outb");
+
+            fprintf("Procesando: %s\n", file_path);
+
+            % Leer archivo
+            [tSeries, ChanName, ~, ~, ~] = ReadFASTbinary(file_path);
+
+            % --- DELs y máximos (por semilla) ---
+            for vvar = 1:length(variables)
+                var = variables{vvar};
+                SN_Slope = m_values(vvar);
+
+                idx = find(strcmp(ChanName, var), 1);
+                if isempty(idx)
+                    error('Variable %s no encontrada en el archivo: %s', var, file_path);
+                end
+
+                Time   = tSeries(iStart:iEnd, 1);
+                Sensor = tSeries(iStart:iEnd, idx);
+
+                % DEL (m-method)
+                RF = RunRainFlowAnalysis(Time, Sensor, SN_Slope, EqvFreq);
+                DEL_val = cell2mat(RF.EqvLoads);
+
+                % Guardar por semilla
+                DELs.(estrategia).(vel_field).(sd_field).(var) = DEL_val;
+                Maxs.(estrategia).(vel_field).(sd_field).(var) = max(abs(Sensor));
+
+                % Acumular para el ponderado por semilla
+                DEL_buffer(var) = [DEL_buffer(var), DEL_val];
+                MAX_buffer(var) = [MAX_buffer(var), max(abs(Sensor))];
+            end
+
+            % --- Medias (por semilla) ---
+            for op_var = 1:length(op_variables)
+                var = op_variables{op_var};
+                idx = find(strcmp(ChanName, var), 1);
+                if isempty(idx)
+                    error('Variable %s no encontrada en el archivo: %s', var, file_path);
+                end
+                Sensor = tSeries(iStart:iEnd, idx);
+                Medias.(estrategia).(vel_field).(sd_field).(var) = mean(Sensor);
+            end
+
+            % --- Energía inyectada (por semilla) ---
+            idxP = find(strcmp(ChanName, 'GenPwr'), 1);
+            if isempty(idxP)
+                warning('Variable GenPwr no encontrada en %s', file_path);
+            else
+                Time = tSeries(:,1);
+                Pgen = tSeries(:,idxP); % [kW]
+
+                for d = 1:length(duraciones)
+                    t_start = t_inercia;
+                    t_end   = t_inercia + duraciones(d);
+                    mask = (Time >= t_start) & (Time <= t_end);
+
+                    E_kWs = trapz(Time(mask), Pgen(mask)); % kW*s
+                    E_kWh = E_kWs / 3600.0;
+
+                    dur_field = "Dur" + string(duraciones(d)) + "s";
+                    Energias.(estrategia).(vel_field).(sd_field).(dur_field) = E_kWh;
+                end
+            end
+        end % semillas
+
+        % === Agregados ponderados por semilla (promedio generalizado con m) ===
+        % DEL: (mean(DEL.^m))^(1/m)
+        % Max: (mean(Max.^m))^(1/m)
+        for vvar = 1:length(variables)
+            var = variables{vvar};
+            m   = m_values(vvar);
+
+            DEL_vec = DEL_buffer(var);
+            MAX_vec = MAX_buffer(var);
+
+            if isempty(DEL_vec)
+                continue
+            end
+
+            DEL_m_weighted = ( mean( DEL_vec.^m ) )^(1/m);
+            MAX_weighted = max(MAX_vec);
+            
+            DELs_ponderados_seed.(estrategia).(vel_field).(var) = DEL_m_weighted;
+            Maxs_ponderados_seed.(estrategia).(vel_field).(var) = MAX_weighted;
+        end
+
+    end % estrategias
+end % velocidades
+
+%%
+save('Omega_min_study_DELs_Max_means_1_seed.mat')

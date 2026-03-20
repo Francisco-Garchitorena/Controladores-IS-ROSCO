@@ -1,0 +1,7 @@
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/discon.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/edit_cache.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/rebuild_cache.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/list_install_components.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/install.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/install/local.dir
+E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/CMakeFiles/install/strip.dir

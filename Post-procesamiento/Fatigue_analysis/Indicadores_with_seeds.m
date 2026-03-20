@@ -6,12 +6,14 @@ addpath RainflowAnalysis\
 % ULTIMO USO 04/09/25
 
 %% Parámetros
-Turbine =  "NREL5MW";%"IEA3p4MW";
-turbine_base_name = "NRELOffshrBsline5MW";%"IEA-3.4-130-RWT";
+Turbine =  "IEA3p4MW"; %"NREL5MW";
+turbine_base_name = "IEA-3.4-130-RWT"; %"NRELOffshrBsline5MW";
 
 % Velocidades, TI y semillas
 velocidades       = [7.5, 8.0, 8.5, 9.0, 9.5];
 velocidades_names = ["7_5", "8", "8_5", "9", "9_5"];
+% velocidades       = [8.0, 8.5, 9.0, 9.5, 10.0];
+% velocidades_names = ["8_0", "8_5", "9_0", "9_5", "10_0"];
 TI     = "TI8.0";
 %CFG 10/09/25:
 %seeds  = ["sd0","sd1","sd2","sd3","sd4","sd5","sd6","sd7","sd8","sd9","sd10","sd11"];
@@ -49,7 +51,7 @@ DELs_ponderados_seed  = struct();
 Maxs_ponderados_seed  = struct();
 
 %CFG 10/09/25: base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
-base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
+base_path = "E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
 
 for v = 1:length(velocidades)
     Vstr      = sprintf("%.1f", velocidades(v));
@@ -181,4 +183,6 @@ end % velocidades
 %%
 %save('DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat')
 %save('DELs_Max_means_per_seed_24_seeds_with_AP_dip.mat')
-save('NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat')
+%save('NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat')
+%save('NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat')
+save('IEA3p4MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat')

@@ -118,6 +118,7 @@ class YawGroup:
             if key not in seed_dict:
                 seed_dict[key] = {'DEL': [], 'max': []}
             if variable in sim.del_variables and sim.results[variable]['DEL'] is not None:    #Solo quiero que me guarde el DEL en los casos que está calculado
+                print(sim.results[variable]['DEL'])
                 seed_dict[key]['DEL'].append(sim.results[variable]['DEL'])
             seed_dict[key]['max'].append(sim.results[variable]['max_value'])
         return seed_dict
@@ -206,28 +207,85 @@ class PostProcessor:
     def export_to_pickle(self, filepath):
         with open(filepath, 'wb') as f:
             pickle.dump(self, f)  # Serializa toda la instancia del postprocesador
-
-    # Calcula el DEL ponderado por la distribución Weibull (lifetime weighted DEL)-- DEL PONDERADO POR VELOCIDAD -- Lo corre una vez por variable
-    def Yaw_weighted_DEL(self, dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf = None):
+    
+    #-----------------------------------------------------PONDERACIONES--------------------------------------------------------#
+    # 1. DEL PONDERADO POR SEMILLA Y VELOCIDAD -- Lo corre una vez por variable y DLC
+    def Seed_speed_weighted_DEL(self, dlc_name, variable, m, A, k, yaw, buscar_semillas, Use_Weibull, pdf = None, dlc_with_events=None, n_occ_dlcs=None):
         group = self.dlc_groups[dlc_name]
-        del_total = 0
-        total_weight = 0
+                                
+        summary = group.yaw_groups[yaw].get_summary_by_speed(variable, buscar_semillas)    # El summary.values es: dict_values([{'DEL': 2553.5393667185826, 'max': 5386.469063399067}, {'DEL': 3934.193090914738, 'max': 8923.456244604371}, ... tiene el DEL y max ponderado por semilla
+        speeds = np.array(list(summary.keys()))
+        DELs = np.array([v['DEL'] for v in summary.values()])   #guardo un array con los DELs ponderado por semilla (uno por velocidad)
+        is_event_dlc = dlc_with_events and dlc_name in dlc_with_events
+        
+        if is_event_dlc and n_occ_dlcs:
+            n_occ_info = n_occ_dlcs.get(dlc_name)
 
-        for yaw, weight in yaw_weights[dlc_name].items():   # Recorre los ángulos de yaw de cada DLC (con su peso) y obtiene el DEL y máximo ponderado por semilla. 
-            if yaw not in group.yaw_groups:
-                continue
-            summary = group.yaw_groups[yaw].get_summary_by_speed(variable, buscar_semillas)    # El summary.values es: dict_values([{'DEL': 2553.5393667185826, 'max': 5386.469063399067}, {'DEL': 3934.193090914738, 'max': 8923.456244604371}, ... tiene el DEL y max ponderado por semilla
-            speeds = np.array(list(summary.keys()))
-            DELs = np.array([v['DEL'] for v in summary.values()])   #guardo un array con los DELs ponderado por semilla (uno por velocidad)
+            if isinstance(n_occ_info, dict):       #Si es un diccionario, como en el caso de 3.1, 4.1, debo realizar un filtrado por velocidades de los DELs
+                # caso: n_occ por velocidad (dict)
+                filtered_DELs = []                  # Para los DLCs que requieren solo algunas velocidades, filtro estas velocidades.
+                weight_factors = []
+                filtered_speeds = []
+                total_n_occ = sum(n_occ_info.values())
+                print(total_n_occ)
+                for v, n_occ in n_occ_info.items():
+                    if v in speeds:
+                        idx = np.where(speeds == v)[0][0]
+                        filtered_DELs.append(DELs[idx])
+                        filtered_speeds.append(v)      #Guardo las velocidades de interés (las que vienen en el diccionario de n_occ)
+                        weight_factor = n_occ/total_n_occ   
+                        weight_factors.append(weight_factor)   #el factor de ponderación es el peso del número de ocurrencias anuales
+                filtered_DELs = np.array(filtered_DELs)    
+                weight_factors = np.array(weight_factors)
+                filtered_speeds = np.array(filtered_speeds)
+                print('Getting Weighted Seed-speed weighted DEL. Weight factors  for ', dlc_name, 'with', filtered_speeds,':' ,weight_factors)
+                seed_speed_weighted_del = (np.sum(filtered_DELs**m * weight_factors)) ** (1/m)
+
+            else:  
+                # caso: n_occ único para todo el DLC----- ej 2.4y
+                if Use_Weibull:
+                    pdf = (k / A) * (speeds / A)**(k - 1) * np.exp(-(speeds / A)**k)
+                    pdf /= pdf.sum()
+
+                print('Getting Weighted Seed-speed weighted DEL. Weight factors  for ', dlc_name, ': Using pdf as nocc are not considered for seed-speed weight')
+
+                seed_speed_weighted_del = (np.sum((DELs ** m) * pdf)) ** (1/m)
+
+        else:
             if Use_Weibull:
                 pdf = (k / A) * (speeds / A)**(k - 1) * np.exp(-(speeds / A)**k)   #Weibull 
                 pdf /= pdf.sum()
-            del_yaw = np.sum((DELs**m) * pdf)**(1/m)
-            del_total += weight * del_yaw**m   #sumo weight*DEL para obtener el DEL poderado por yaw
-            total_weight += weight
-
-        return del_total**(1/m) 
+            seed_speed_weighted_del = np.sum((DELs**m) * pdf)**(1/m)
+            
+            print('Getting Weighted Seed-speed weighted DEL. Weight factors  for ', dlc_name, ': Using pdf as nocc are not considered for seed-speed weight')
+        
+        return seed_speed_weighted_del
     
+    # 2. DEL PONDERADO POR SEMILLA, VELOCIDAD Y YAW -- Lo corre una vez por variable y DLC
+    def Yaw_weighted_DEL(self, dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf = None):
+        group = self.dlc_groups[dlc_name]
+        # del_total = 0
+        # total_weight = 0
+        Yaw_Seed_speed_weighted_DEL = 0
+        
+        for yaw, weight in yaw_weights[dlc_name].items():   # Recorre los ángulos de yaw de cada DLC (con su peso) y obtiene el DEL y máximo ponderado por semilla. 
+            if yaw not in group.yaw_groups:
+                continue
+            # summary = group.yaw_groups[yaw].get_summary_by_speed(variable, buscar_semillas)    # El summary.values es: dict_values([{'DEL': 2553.5393667185826, 'max': 5386.469063399067}, {'DEL': 3934.193090914738, 'max': 8923.456244604371}, ... tiene el DEL y max ponderado por semilla
+            # speeds = np.array(list(summary.keys()))
+            # DELs = np.array([v['DEL'] for v in summary.values()])   #guardo un array con los DELs ponderado por semilla (uno por velocidad)
+            # if Use_Weibull:
+            #     pdf = (k / A) * (speeds / A)**(k - 1) * np.exp(-(speeds / A)**k)   #Weibull 
+            #     pdf /= pdf.sum()
+            # del_yaw = np.sum((DELs**m) * pdf)**(1/m)
+            # del_total += weight * del_yaw**m   #sumo weight*DEL para obtener el DEL poderado por yaw
+            # total_weight += weight
+            Seed_speed_weighted_DEL = self.Seed_speed_weighted_DEL(dlc_name, variable, m, A, k, yaw, buscar_semillas, Use_Weibull, pdf)  # Obtengo el DEL ponderado por semilla para este yaw
+            Yaw_Seed_speed_weighted_DEL += weight * Seed_speed_weighted_DEL**m   #sumo weight*DEL para obtener el DEL poderado por yaw
+
+        return Yaw_Seed_speed_weighted_DEL**(1/m) 
+    
+    # 3. DEL PONDERADO POR SEMILLA, VELOCIDAD, YAW Y CANTIDAD DE OCURRENCIAS-- Lo corre una vez por variable y DLC
     def lifetime_weighted_del_with_occ(self, dlc_name, variable, m, A, k, cut_in, cut_out, speed_step, Vref, yaw_weights, buscar_semillas, Use_Weibull=True, pdf=None, dlc_with_events=None, n_occ_dlcs=None, sim_time=None, n_years=20):
         """
         Calcula el DEL ponderado por tiempo de vida.
@@ -336,10 +394,10 @@ class PostProcessor:
             total_weight += weight_yaw
 
         del_total = (del_total / total_weight) ** (1/m)   # Cambio 04/08: antes: del_total / total_weight if total_weight > 0 else None
-        print('DEL_total:', dlc_name, del_yaw)
         
         return del_total 
-
+    
+    # 3. DEL PONDERADO POR SEMILLA, VELOCIDAD, YAW, CANTIDAD DE OCURRENCIAS y DLC-- Lo corre una vez por variable y para todos los DLCs (pondera DLCs)
     def lifetime_weighted_del_TOTAL(self, dlc_names, TurbSim_DLCs, turb_sel, variables, m_values, A, k, cut_in, cut_out, speed_step, Vref, yaw_weights, dlc_with_events, n_occ_dlcs, del_analysis_window_dlc, pdf, Use_Weibull=True, n_years=20):
 
         # Datos para el gráfico: lista de listas
@@ -428,7 +486,7 @@ class PostProcessor:
 
 #------------------------------------------ PLOTS ----------------------------------------------#
     # Genera gráfico DEL vs velocidad con puntos por semilla y línea promedio: tiene como entrada la variable y el yaw
-    def plot_del_vs_speed(self, dlc_name, variable, m, varname, TurbSim_DLCs, buscar_semillas, output_folder, yaw_weights, Use_Weibull, A, k, pdf =None):
+    def plot_del_vs_speed(self, dlc_name, variable, m, varname, TurbSim_DLCs, buscar_semillas, output_folder, yaw_weights, Use_Weibull, A, k, pdf =None, dlc_with_events=None, n_occ_dlcs=None, sim_time=600, n_years=20):
         dlc = self.dlc_groups[dlc_name]
         for yaw, group in dlc.yaw_groups.items():
             summary = group.get_summary_by_speed(variable, buscar_semillas)    # Obtiene el DEL ponderado por semilla
@@ -450,9 +508,9 @@ class PostProcessor:
                     used_labels.add(seed)
             
             #QUIERO AGREGAR EL LIFETIME WEIGHTED DEL COMO UNA LINEA HORIZONTAL EN EL GRAFICO
-            lifetime_del = self.Yaw_weighted_DEL(dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf)
-            if lifetime_del is not None:
-                plt.axhline(y=lifetime_del, color='r', linestyle='--', label='Speed Weighted DEL')
+            Seed_speed_weighted_DEL = self.Seed_speed_weighted_DEL(dlc_name, variable, m, A, k, yaw, buscar_semillas, Use_Weibull, pdf, dlc_with_events, n_occ_dlcs)
+            if Seed_speed_weighted_DEL is not None:
+                plt.axhline(y=Seed_speed_weighted_DEL, color='r', linestyle='--', label='Speed Weighted DEL')
 
             plt.xlabel("Wind Speed [m/s]")
             plt.ylabel(f"DEL [{variable}]")
@@ -465,7 +523,7 @@ class PostProcessor:
             plt.close()
 
 
-    # Genera gráfico de DEL ponderado por Weibull (lifetime weighted DEL) en barra
+    # Genera gráfico de DEL ponderado por semilla, Weibull y Yaw (lifetime weighted DEL) en barra
     def plot_lifetime_del(self, dlc_name, variable, m, varname, Use_Weibull, A, k, pdf, yaw_weights, output_folder, buscar_semillas):
         lifetime_del = self.Yaw_weighted_DEL(dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf)
         plt.figure()
@@ -478,7 +536,7 @@ class PostProcessor:
 
 
     # Genera gráfico de valor máximo vs velocidad, con opción a usar media o máximo de semillas (ej: media de los valores máximos del Fore-Aft entre semillas o máximo entre los máximos. )
-    def plot_max_vs_speed(self, dlc_name, variable, varname, TurbSim_DLCs, buscar_semillas, output_folder, mode='mean'):
+    def plot_max_vs_speed(self, dlc_name, variable, del_variables,varname, TurbSim_DLCs, buscar_semillas, output_folder, mode='mean'):
         dlc = self.dlc_groups[dlc_name]
         for yaw, group in dlc.yaw_groups.items():
             summary = group.get_summary_by_speed(variable, buscar_semillas, mode=mode)
@@ -499,7 +557,11 @@ class PostProcessor:
                     used_labels.add(seed)
 
             plt.xlabel("Wind Speed [m/s]")
-            plt.ylabel(f"Max var [{variable}]")              #11/07/25: Revisar esto: para rotspeed y pitch no hago máximo, hago media
+            if variable in del_variables:
+                plt.ylabel(f"Max value [{variable}]")              #11/07/25: Revisar esto: para rotspeed y pitch no hago máximo, hago media
+            else:
+                plt.ylabel(f"Mean value [{variable}]")
+            
             plt.title(f"{dlc_name} - Max value vs Speed - {varname} - Yaw {yaw}º")
             plt.legend()
             plt.xticks(speeds)
@@ -642,7 +704,6 @@ class PostProcessor:
         data = np.array(data)  # shape (num_dlcs, num_vars)
 
         # Obtener valores totales ponderados (raíz m-ésima) por variable
-        print(variables)
         LWT_DEl_dict, LWT_DEl_per_variable_dict = self.lifetime_weighted_del_TOTAL(
             dlc_names, TurbSim_DLCs, turb_sel, variables, m_values, A, k, cut_in, cut_out, speed_step, Vref,
             yaw_weights, dlc_with_events, n_occ_dlcs, del_analysis_window_dlc, pdf,
@@ -691,7 +752,7 @@ class PostProcessor:
 
         
 #------------------------------------------- EXPORTS ----------------------------------------------#
-    def export_seed_del_max_summary(self, filepath, TurbSim_DLCs, turb_sel, variables, del_variables, m_values, yaw_weights, cut_in, cut_out, speed_step, Vref, Use_Weibull, A, k, pdf, dlc_with_events, n_occ_dlcs, del_analysis_window_dlc, n_years):
+    def export_seed_del_max_summary(self, filepath, TurbSim_DLCs, turb_sel, variables, del_variables, m_values, yaw_weights, cut_in, cut_out, speed_step, Vref, Use_Weibull, A, k, pdf, mean_or_max_sd_weigh_var,  dlc_with_events, n_occ_dlcs, del_analysis_window_dlc, n_years):
         """
         Exporta a CSV los valores DEL y máximos por simulación (semilla, velocidad, yaw)
         y los valores agregados por velocidad y yaw.
@@ -713,8 +774,13 @@ class PostProcessor:
 
                     rows.append({
                         "DLC": dlc_name,
-                        "Variable": "AEP_mean",
-                        "Seed-speed-yaw-nocc Weighted DEL": aep_mean,   #capaz queda raro porque queda el aep en la columna del lifetime weighted DEL
+                        "Lifetime Weighted DEL": None,
+                        "AEP_mean_pwr_per_sd":aep_mean,
+                        "AEP_max_pwr_per_sd": None,
+                        "Variable": None,
+                        "Seed-speed weighted DEL": None,
+                        "Yaw-seed-speed weighted DEL": None,
+                        "Seed-speed-yaw-nocc Weighted DEL": None,   #capaz queda raro porque queda el aep en la columna del lifetime weighted DEL
                         "Yaw": None,
                         "Uref": None,
                         "Seed": None,
@@ -726,8 +792,13 @@ class PostProcessor:
                     })
                     rows.append({
                         "DLC": dlc_name,
-                        "Variable": "AEP_max",
-                        "Seed-speed-yaw-nocc Weighted DEL": aep_max,
+                        "Lifetime Weighted DEL": None,
+                        "Variable": None,
+                        "AEP_mean_pwr_per_sd": None,
+                        "AEP_max_pwr_per_sd": aep_max,
+                        "Seed-speed weighted DEL": None,
+                        "Yaw-seed-speed weighted DEL": None,
+                        "Seed-speed-yaw-nocc Weighted DEL": None,
                         "Yaw": None,
                         "Uref": None,
                         "Seed": None,
@@ -741,11 +812,40 @@ class PostProcessor:
                 if variable in del_variables:
                     m = m_values.get(variable,10)
                     sim_time = del_analysis_window_dlc.get(dlc_name, 600)
-                    total_lifetime_del = self.lifetime_weighted_del_with_occ(dlc_name, variable, m, A, k, cut_in, cut_out, speed_step, Vref, yaw_weights, buscar_semillas, Use_Weibull, pdf, dlc_with_events, n_occ_dlcs, sim_time, n_years)#self.Yaw_weighted_DEL(dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf)
+                    seed_speed_yaw_nocc_weighted_del = self.lifetime_weighted_del_with_occ(dlc_name, variable, m, A, k, cut_in, cut_out, speed_step, Vref, yaw_weights, buscar_semillas, Use_Weibull, pdf, dlc_with_events, n_occ_dlcs, sim_time, n_years)#self.Yaw_weighted_DEL(dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf)
+
                     rows.append({
                         "DLC": dlc_name,
+                        "Lifetime Weighted DEL": None,
+                        "AEP_mean_pwr_per_sd": None,
+                        "AEP_max_pwr_per_sd": None,
                         "Variable": variable,
-                        "Seed-speed-yaw-nocc Weighted DEL": total_lifetime_del,
+                        "Seed-speed weighted DEL": None,
+                        "Yaw-seed-speed weighted DEL": None,
+                        "Seed-speed-yaw-nocc Weighted DEL": seed_speed_yaw_nocc_weighted_del,
+                        "Yaw": None,
+                        "Uref": None,
+                        "Seed": None,
+                        "DEL_individual": None,
+                        "Max_individual": None,
+                        "Seed weighted DEL": None,
+                        "Seed weighted Max": None,
+                        "Mean_power": None,
+                    })
+
+                if variable in del_variables:
+                    m = m_values.get(variable,10)
+                    sim_time = del_analysis_window_dlc.get(dlc_name, 600)
+                    Yaw_seed_speed_weighted_del = self.Yaw_weighted_DEL(dlc_name, variable, m, A, k, yaw_weights, buscar_semillas, Use_Weibull, pdf)
+                    rows.append({
+                        "DLC": dlc_name,
+                        "Lifetime Weighted DEL": None,
+                        "AEP_mean_pwr_per_sd": None,
+                        "AEP_max_pwr_per_sd": None,
+                        "Variable": variable,
+                        "Seed-speed weighted DEL": None,
+                        "Yaw-seed-speed weighted DEL": Yaw_seed_speed_weighted_del,
+                        "Seed-speed-yaw-nocc Weighted DEL": seed_speed_yaw_nocc_weighted_del,
                         "Yaw": None,
                         "Uref": None,
                         "Seed": None,
@@ -758,8 +858,27 @@ class PostProcessor:
                     
                 for yaw, yaw_group in dlc_group.yaw_groups.items():
                     seed_data = yaw_group.get_seed_del_and_max(variable)
-                    summary = yaw_group.get_summary_by_speed(variable, buscar_semillas)
-                    
+                    summary = yaw_group.get_summary_by_speed(variable, buscar_semillas,mean_or_max_sd_weigh_var )
+                    if variable in del_variables:
+                        seed_speed_weighted_del = self.Seed_speed_weighted_DEL(dlc_name, variable, m, A, k, yaw, buscar_semillas, Use_Weibull, pdf, dlc_with_events, n_occ_dlcs)
+                        rows.append({
+                            "DLC": dlc_name,
+                            "Lifetime Weighted DEL": None,
+                            "AEP_mean_pwr_per_sd": None,
+                            "AEP_max_pwr_per_sd": None,
+                            "Variable": variable,
+                            "Seed-speed weighted DEL": seed_speed_weighted_del,
+                            "Yaw-seed-speed weighted DEL": None,
+                            "Seed-speed-yaw-nocc Weighted DEL": None,
+                            "Yaw": yaw,
+                            "Uref": None,
+                            "Seed": None,
+                            "DEL_individual": None,
+                            "Max_individual": None,
+                            "Seed weighted DEL": None,
+                            "Seed weighted Max": None,
+                            "Mean_power": None,
+                        })
                     for (uref, seed, yaw_angle), values in seed_data.items():
                         if dlc_name == '1p2':   #Quiero el valor de potencia media de cada simulación del DLC 1.2
                             for sim in yaw_group.simulations:
@@ -770,7 +889,12 @@ class PostProcessor:
                             for del_val, max_val in zip(values['DEL'], values['max']):   #Esto lo hace por las dudas de que haya más de una simulación por semilla y velocidad pero no va a pasar 
                                 rows.append({
                                     "DLC": dlc_name,
+                                    "Lifetime Weighted DEL": None,
+                                    "AEP_mean_pwr_per_sd": None,
+                                    "AEP_max_pwr_per_sd": None,
                                     "Variable": variable,
+                                    "Seed-speed weighted DEL": None,
+                                    "Yaw-seed-speed weighted DEL": None,
                                     "Seed-speed-yaw-nocc Weighted DEL": None,
                                     "Yaw": yaw_angle,
                                     "Uref": uref,
@@ -785,7 +909,12 @@ class PostProcessor:
                             for max_val in values['max']:   #Esto lo hace por las dudas de que haya más de una simulación por semilla y velocidad pero no va a pasar 
                                 rows.append({
                                     "DLC": dlc_name,
+                                    "Lifetime Weighted DEL": None,
+                                    "AEP_mean_pwr_per_sd": None,
+                                    "AEP_max_pwr_per_sd": None,
                                     "Variable": variable,
+                                    "Seed-speed weighted DEL": None,
+                                    "Yaw-seed-speed weighted DEL": None,
                                     "Seed-speed-yaw-nocc Weighted DEL":None ,
                                     "Yaw": yaw_angle,
                                     "Uref": uref,
@@ -797,15 +926,21 @@ class PostProcessor:
                                     "Mean_power": mean_power_value if dlc_name == '1p2' else None, 
                                 })
         dlc_names = self.dlc_groups.keys()
-        LWT_DEl_dict, LWT_DEl_per_variable_dict = self.lifetime_weighted_del_TOTAL(dlc_names, variables, TurbSim_DLCs, turb_sel, m_values, A, k, cut_in, cut_out, speed_step, Vref,
+        LWT_DEl_dict, LWT_DEl_per_variable_dict = self.lifetime_weighted_del_TOTAL(dlc_names, TurbSim_DLCs, turb_sel, del_variables, m_values, A, k, cut_in, cut_out, speed_step, Vref,
                                         yaw_weights, dlc_with_events, n_occ_dlcs, del_analysis_window_dlc, pdf,
                                         Use_Weibull, n_years)
+
         for variable in variables:
             if variable in del_variables:                
                 rows.append({
                                 "DLC": "Lifetime Weighted DEL",
+                                "Lifetime Weighted DEL": LWT_DEl_per_variable_dict[variable], 
+                                "AEP_mean_pwr_per_sd": None,
+                                "AEP_max_pwr_per_sd": None,
                                 "Variable": variable,
-                                "Seed-speed-yaw-nocc Weighted DEL": LWT_DEl_per_variable_dict[variable],
+                                "Seed-speed weighted DEL": None,
+                                "Yaw-seed-speed weighted DEL": None,
+                                "Seed-speed-yaw-nocc Weighted DEL": None,
                                 "Yaw": None,
                                 "Uref": None,
                                 "Seed": None,

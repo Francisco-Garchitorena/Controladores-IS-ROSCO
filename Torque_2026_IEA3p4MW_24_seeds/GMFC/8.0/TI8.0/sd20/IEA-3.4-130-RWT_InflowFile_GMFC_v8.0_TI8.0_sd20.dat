@@ -19,7 +19,7 @@ False         VelInterpCubic - Use cubic interpolation for velocity in time (fal
 110.0         RefHt_Uni     - Reference height for horizontal wind speed (m)
 1.0           RefLength     - Reference length for linear horizontal and vertical sheer (-)
 ================== Parameters for Binary TurbSim Full-Field files   [used only for WindType = 3] ==============
-"C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_IEA3p4MW_24_seeds/Wind/SPW/v8.0/TI8.0/sd20/IEAonshore_8.0_sh0.2_TI8.0_sd20.bts" FileName_BTS  - Name of the Full field wind file to use (.bts)
+"E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_IEA3p4MW_24_seeds/Wind/SPW/v8.0/TI8.0/sd20/IEAonshore_8.0_sh0.2_TI8.0_sd20.bts" FileName_BTS  - Name of the Full field wind file to use (.bts)
 ================== Parameters for Binary Bladed-style Full-Field files   [used only for WindType = 4] =========
 "none"        FilenameRoot  - Rootname of the full-field wind file to use (.wnd, .sum)
 False         TowerFile     - Have tower file (.twr) (flag)

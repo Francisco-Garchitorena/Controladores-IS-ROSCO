@@ -24,7 +24,7 @@
 0                   ! PF_Mode           - Pitch fault mode {0 - not used, 1 - constant offset on one or more blades}
 0                   ! Ext_Mode          - External control mode {0 - not used, 1 - call external dynamic library}
 0                   ! ZMQ_Mode          - Fuse ZeroMQ interaface {0: unused, 1: Yaw Control}
-4                   ! IS_ControlMode    - Synthetic Inertia mode [0- unused, 1- Tarnowski Strategy, 2- kOmega2 Strategy, 3- Ontario Strategy, 4- Wang Strategy]
+5                   ! IS_ControlMode    - Synthetic Inertia mode [0- unused, 1- Tarnowski Strategy, 2- kOmega2 Strategy, 3- Ontario Strategy, 4- Wang Strategy]
 !------- FILTERS ----------------------------------------------------------
 1.68372             ! F_LPFCornerFreq	- Corner frequency (-3dB point) in the low-pass filters, [rad/s]
 0.00000             ! F_LPFDamping		- Damping coefficient {used only when F_FilterType = 2} [-]

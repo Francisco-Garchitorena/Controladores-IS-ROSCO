@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\discon.dir/objects.a
+C:\Users\fgarchitorena\anaconda3\Library\mingw-w64\bin\ar.exe qc CMakeFiles\discon.dir/objects.a @CMakeFiles\discon.dir\objects1.rsp
+C:\Users\fgarchitorena\anaconda3\Library\mingw-w64\bin\x86_64-w64-mingw32-gfortran.exe  -ffree-line-length-0 -static-libgcc -static-libgfortran -static -fdefault-real-8 -fdefault-double-8 -cpp -O2 -g -DNDEBUG -shared -o libdiscon.dll -Wl,--out-implib,libdiscon.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles\discon.dir/objects.a -Wl,--no-whole-archive 

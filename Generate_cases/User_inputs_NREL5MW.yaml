@@ -2,15 +2,15 @@
 
 #------------------------------------FOLDER GENERATION---------------------------------------------#
 RootNameWT: NRELOffshrBsline5MW                                                                          # Root name of the wind turbine. Example options: IEA-3.4-130-RWT, NRELOffshrBsline5MW, NREL-2p3-116 
-OriginalDir_OF: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Generate_cases/Reference_WTs/{RootNameWT}-master/openfast/   # OpenFast reference wind turbine directory   
+OriginalDir_OF: E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Generate_cases/Reference_WTs/{RootNameWT}-master/openfast/   # OpenFast reference wind turbine directory   
 DLC_folder_name: Torque_2026_NREL5MW_24_seeds                                                                              # Name of the DLC case folder.
 Wind_file_root_name: NREL5MW                                                  # Wind file root name located in Reference_WTs/*/Wind/{Wind_file_root_name}_.inp. Examples: IEAonshore, NREL_2p3, NREL_5MW
-Root DLCs folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
-Controller_folder: C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/           # Folder where the controller is located.  
+Root DLCs folder: E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/                                           # Directorio raíz donde generar la carpeta de DLCs.
+Controller_folder: E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build/           # Folder where the controller is located.  
 DLCs:                                                                                                    # DLCs to be generated and analyzed. For generation select all the ones desired. If after generatio the user wishes to analyze only some of them, set the modules flags to False except the post_process one and run the *sh again.
 #- Wang                                                                                                  # DLC 1.2: Normal operation with turbulence.
-#- Tarnowski                                                                                              # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
-- Norm_op                                                                                               # DLC 2.4l: Power production plus grid loss. (NTM)
+- Tarnowski                                                                                              # DLC 6.4: Parked or idling condition with turbulent inflow. (NTM)
+#- Norm_op                                                                                               # DLC 2.4l: Power production plus grid loss. (NTM)
 #- GMFC
 #- 2p4y                                                                                                  # DLC 2.4y: Power production plus extreme yaw error (+- 20º). (NTM)
 #- 4p1                                                                                                   # DLC 4.1: Normal shutdown. (NWP -- NO turbulence)
@@ -35,10 +35,15 @@ TurbSim_DLCs:                                                                   
 - GMFC
 #------------------------------------------Site-specific conditions----------------------------------#
 
+# Site_specific_wind: True                                                                      # If true, the user will be able to select the wind speed distribution -- combination of v-TI-sh.
+# WindSpeed_SPW: [9.5,10, 10.5, 11, 11.5]   # See that it coincides with cut_in:speed_step:cut_out    [7.5, 8, 8.5, 9, 9.5] 
+# TI_SSW: [8,8,8,8,8]
+# shear_SSW: [0.2,0.20, 0.20, 0.20, 0.20] # Shear values to be used for each wind speed bin.
+
 Site_specific_wind: True                                                                      # If true, the user will be able to select the wind speed distribution -- combination of v-TI-sh.
-WindSpeed_SPW: [7.5, 8, 8.5, 9, 9.5]   # See that it coincides with cut_in:speed_step:cut_out   
+WindSpeed_SPW: [8.0,8.5,9.0,9.5,10.0]   # See that it coincides with cut_in:speed_step:cut_out    [7.5, 8, 8.5, 9, 9.5] 
 TI_SSW: [8,8,8,8,8]
-shear_SSW: [0.20, 0.20, 0.20, 0.20, 0.20] # Shear values to be used for each wind speed bin.
+shear_SSW: [0.20,0.20,0.20,0.20,0.20] # Shear values to be used for each wind speed bin.
 
 #------------------------------------------Combinations of v-TI-sh----------------------------------#
 
@@ -49,9 +54,9 @@ shear_values: [-0.20, -0.15]
 #------------------------------------------FLAGS FOR USER SELECTION-------------------------------#
 
 #--- MODULES -------------------------------#
-First_time: True                                                                 # If true, the "General" and "Wind "Folder will be created.
-Generate_Wind_files: True                                                        # If true, the wind files will be generated.
-Generate_input_files: True                                                        # If true, the input files will be generated.
+First_time: false                                                                 # If true, the "General" and "Wind "Folder will be created.
+Generate_Wind_files: false                                                        # If true, the wind files will be generated.
+Generate_input_files: false                                                        # If true, the input files will be generated.
 Run_DLCs: True                                                                    # If true OpenFast will be executed for each case. 
 post_process: True                                                                # If true the simulations will be post-processed. Set the characteristics in the "POST-PROCESSING" section. 
 
@@ -60,7 +65,7 @@ Copy_Wind_folder: false                                                         
 Created_Wind_folder_path: /clusteruy/home/fgarchitorena/OpenFast/2024             # Only used Copy_Wind_folder = True. Directory where user has the Wind Folder to be copied to the DLC_folder_name.
 Same_seed: True                                                                   # If false, every simulation will have a different seed. If true, only n_seeds will be used.                        
 Use_Weibull: True                                                                 # If true, the Weibull distribution will be used to generate the wind speed distribution.
-save_results_pickle: True                                                         # If true, the post-processed results will be saved as a pickle file. Beware: results can weight up to 8GB.
+save_results_pickle: false                                                         # If true, the post-processed results will be saved as a pickle file. Beware: results can weight up to 8GB.
 mean_or_max_sd_weigh_var: mean                                                    # Select whether to weigh the max values per seed by the mean(max) or by max(max).
 Gen_plot_del_vs_speed: True                                                       # If true, the DELs will be plotted against the wind speed.   
 Gen_plot_pot_vs_speed: True                                                       # If true, the mean power will be plotted against the wind speed.    
@@ -78,7 +83,7 @@ partition : normal                                                              
 sel_nucleos: 4                                                                   # number of jobs to be ran in parallel for simulation (depends on user preference and cluster capacity). 
 
 #------------------------------------------Synthetic inertia----------------------------------#
-Pacc: 0.04
+Pacc: 0.06
 Itim_SI: 57600
 Delta_T_over: 10          #Time required by grid operator where kinetic energy is to be injected to the grid.
 #-------------------------------------------POST-PROCESSING---------------------------------------#
@@ -148,8 +153,13 @@ dlc_with_events:
   - 4p1
   - 2p4l
   - 2p4y
+  - Tarnowski
+  - Wang
+
 
 n_occ_dlcs:                                                                      # Number of occurrences for each DLC per year for each DLC (2.4y is in hours).
+  Tarnowski: 16.7
+  Wang: 16.7
   #2p4l: 20          # total: 50 ocurrencias al año (ejemplo)                                     
   2p4y: 50           # 50hs de operación con error de yaw 
   3p1:
@@ -163,6 +173,9 @@ n_occ_dlcs:                                                                     
 
 del_analysis_window_dlc:                                                         # Window for DEL analysis for each DLC. Recommendation: use default.
   1p2: 600                                                                       # The window starts at 60s and ends at 660s. The start time is set to avoid the transient part of the simulation. 
+  Tarnowski: 600
+  Wang: 600
+  Norm_op: 600
   2p4l: 200                                                                      # The window starts at 280s (80 s befote the event starts--360s) and ends at 560s.
   2p4y: 600
   3p1: 200

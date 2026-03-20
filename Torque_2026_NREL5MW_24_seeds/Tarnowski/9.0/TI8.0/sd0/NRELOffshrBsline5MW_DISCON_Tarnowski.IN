@@ -110,7 +110,7 @@
 97.0                ! WE_GearboxRatio	- Gearbox ratio [>=1],  [-]
 43702538.05700     ! WE_Jtot			- Total drivetrain inertia, including blades, hub and casted generator inertia to LSS, [kg m^2]
 1.225               ! WE_RhoAir			- Air density, [kg m^-3]
-"C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_NREL5MW_24_seeds/Tarnowski/9.0/TI8.0//sd0\NRELOffshrBsline5MW_Cp_Ct_Cq.txt"	 ! PerfFileName
+"E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO//Torque_2026_NREL5MW_24_seeds/Tarnowski/9.0/TI8.0//sd0\NRELOffshrBsline5MW_Cp_Ct_Cq.txt"	 ! PerfFileName
 36      26          ! PerfTableSize     - Size of rotor performance tables, first number refers to number of blade pitch angles, second number referse to number of tip-speed ratios
 60                  ! WE_FOPoles_N      - Number of first-order system poles used in EKF
 3.0000 3.2897 3.5793 3.8690 4.1586 4.4483 4.7379 5.0276 5.3172 5.6069 5.8966 6.1862 6.4759 6.7655 7.0552 7.3448 7.6345 7.9241 8.2138 8.5034 8.7931 9.0828 9.3724 9.6621 9.9517 10.2414 10.5310 10.8207 11.1103 11.4000 11.8533 12.3067 12.7600 13.2133 13.6667 14.1200 14.5733 15.0267 15.4800 15.9333 16.3867 16.8400 17.2933 17.7467 18.2000 18.6533 19.1067 19.5600 20.0133 20.4667 20.9200 21.3733 21.8267 22.2800 22.7333 23.1867 23.6400 24.0933 24.5467 25.0000               ! WE_FOPoles_v      - Wind speeds corresponding to first-order system poles [m/s]
@@ -147,7 +147,7 @@
 60000000            ! Ftim_SI     	- Step where Synthetic inertia application ends (higher than the last sim step for almost all cases)
 57600	 ! Itim_SI
 0.7 		    ! F_omega_min	- Minimum rotor speed as a percentaje of the rated speed (0.7= 70%Omega_rated)
-0.04	 ! Frecovery
+0.06	 ! Frecovery
 1		    ! TG		- 1: If GenTq is less than VS_Control Torque, then use VS_Control Torque. 
 11		    ! end_Ontario_step  - Time to end Ontario step (counting the rise). 
 1		    ! dt_rise           - Ramp time for Tarnowski and Ontario. 	

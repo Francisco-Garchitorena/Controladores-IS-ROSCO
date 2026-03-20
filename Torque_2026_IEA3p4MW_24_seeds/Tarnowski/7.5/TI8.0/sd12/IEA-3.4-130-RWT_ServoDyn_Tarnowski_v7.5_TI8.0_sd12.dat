@@ -74,7 +74,7 @@ True          GenTiStp      - Method to stop the generator {T: timed using TimGe
 ---------------------- CABLE CONTROL ---------------------------------------- 
 0             CCmode        - Cable control mode {0- none, 4- user-defined from Simulink/Labview, 5- user-defineAfC_phased from Bladed-style DLL}
 ---------------------- BLADED INTERFACE ---------------------------------------- [used only with Bladed Interface]
-"C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build//libdiscon.dll"	 DLL_FileName  - Name/location of the dynamic library {.dll [Windows] or .so [Linux]} in the Bladed-DLL format (-) [used only with Bladed Interface]
+"E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/ROSCO-main/rosco/controller_with_new_strategy/build//libdiscon.dll"	 DLL_FileName  - Name/location of the dynamic library {.dll [Windows] or .so [Linux]} in the Bladed-DLL format (-) [used only with Bladed Interface]
 "IEA-3.4-130-RWT_DISCON_Tarnowski.IN"	 DLL_InFile    - Name of input file sent to the DLL (-) [used only with Bladed Interface]
 "DISCON"      DLL_ProcName  - Name of procedure in DLL to be called (-) [case sensitive; used only with DLL Interface]
 default       DLL_DT        - Communication interval for dynamic library (s) (or "default") [used only with Bladed Interface]
