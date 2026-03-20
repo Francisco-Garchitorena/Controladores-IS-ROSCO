@@ -1,6 +1,7 @@
 *.outb
 *.bts
 *.dbg
+*.dbg2
 *.mat
 *RO.dbg*
 ROSCO-main
