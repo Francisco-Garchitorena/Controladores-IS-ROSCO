@@ -81,7 +81,7 @@ sel_nucleos: 4                                                                  
 #------------------------------------------Synthetic inertia----------------------------------#
 Pacc: 0.04
 Itim_SI: 57600
-Delta_T_over: 10          #Time required by grid operator where kinetic energy is to be injected to the grid.
+Delta_T_over: 5          #Time required by grid operator where kinetic energy is to be injected to the grid.
 #-------------------------------------------POST-PROCESSING---------------------------------------#
 bins: 100                                                                         # Number of bins for DEL method. Recommendation: use default.
 variables:                                                                        # Variables selected for post-processing (OpenFast names).

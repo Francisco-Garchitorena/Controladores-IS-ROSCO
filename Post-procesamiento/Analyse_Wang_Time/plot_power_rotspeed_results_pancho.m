@@ -2,7 +2,7 @@ addpath ../
 %% Parámetros
 Turbine = "IEA3p4MW"; %         
 turbine_base_name = "IEA-3.4-130-RWT"; %  
-base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
+base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
 
 % Velocidades, TI y semilla
 velocidades = [7.0, 8.0, 9.0];

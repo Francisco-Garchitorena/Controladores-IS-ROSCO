@@ -560,14 +560,14 @@ GridCodes.BRA.min_duration_s = 5;
 GridCodes.BRA.max_response_delay_s = NaN;
 GridCodes.BRA.max_post_drop_pct = NaN;
 
-GridCodes.BRA.color  = 'c--';
+GridCodes.BRA.color  = 'g--';
 GridCodes.IESO.color = 'k--';
 GridCodes.HQ.color   = 'b--';
 
 metrics_labels = { ...
     'Maximum active power contribution ($\% \mathrm{P}_\mathrm{nom}$)', ...
-    'Duration of active power (s)', ...
-    'Minimum post-support generation drop ($\% \mathrm{P}_\mathrm{nom}$)'};
+    'Response duration (s)', ...
+    'Post-event active power reduction limit ($\% \mathrm{P}_\mathrm{nom}$)'};
 
 nMetrics = length(metrics_names);
 
@@ -599,6 +599,13 @@ colores = [ ...
         1 1 0 ;             % GMFC → amarillo
     0.93 0.69 0.12;    % Torque-limit → naranja
 ];
+colores = [ ...
+    0.85 0.1 0.1;      % Stepwise → rojo
+        0 0.4470 0.7410 ;             % GMFC → amarillo
+    0.93 0.69 0.12;    % Torque-limit → naranja
+];
+
+
 alpha_bar = 0.8;   % transparencia
 
 for im = 1:nMetrics
@@ -782,4 +789,4 @@ end
 
 disp('>>> Plot terminado correctamente')
 %%
-%exportgraphics(gcf,sprintf('%s_Grid_code_requirementes_v3.png',Turbine),'Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/%s_Grid_code_requirementes_v4_GMFC.png',Turbine),'Resolution',300);

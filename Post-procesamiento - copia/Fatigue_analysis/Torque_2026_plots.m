@@ -2,16 +2,16 @@
 %clear; clc; -21%
 clear;  close all;
 %load DELs_Max_means_per_seed_24_seeds_with_GMFC_str.mat
-load IEA3p4MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal_with_GMFC_strat.mat;
+%load IEA3p4MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal_with_GMFC_strat.mat;
 %load DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat
-%load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal_with_GMFC_strat.mat;
+load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal_with_GMFC_strat.mat;
 name = '24 seeds';
 %% DELS COMP NORMALIZADO
 turbine = "NREL5MW"; %"IEA3p4MW";%
 estrategia_ref = "Norm_op";   % referencia
 estrategias    = [ "Tarnowski","Wang","GMFC"];   % estrategias a comparar
 %estrategia_names = ["Normal operation", "StepWise strategy", "Torque limit strategy", "GMFC"];
-estrategia_names = ["NO", "SW", "TL","GMFC"];
+estrategia_names = ["NO", "SW", "TL","PS"];
 % estrategias    = [ "Tarnowski","Wang"];   % estrategias a comparar
 % estrategia_names = ["Normal operation", "Stepwise strategy", "Torque-limit strategy"];
 % estrategia_names = ["NO", "SW", "TL"];
@@ -20,7 +20,13 @@ estrategia_names = ["NO", "SW", "TL","GMFC"];
 variables = {'RootMyb1','TwrBsMyt','LSSGagMya','RootMxb1','TwrBsMxt','RotTorq'};
 varnames   = {'flapwise','fore-aft','LSS bending moment','edgewise','side-side','LSS torsional moment'};
 fs = 22;
-
+% Keep original colors as you had
+% colores = [0 0.4470 0.7410; 0.9 0 0; 
+%            0.9290 0.6940 0.1250;
+%            1 0.87 0.10];  % yellow
+colores = [1 0.87 0.10; 0.9 0 0; 
+           0.9290 0.6940 0.1250;
+           0 0.4470 0.7410];  % yellow
 % === Cargar resultados ===
 vels = fieldnames(DELs_ponderados_seed.(estrategia_ref));  % velocidades disponibles
 
@@ -73,11 +79,11 @@ for vvar = 1:length(variables)
     vals_cmp_norm = vals_cmp / ref8;
 
     hold on; grid on; box on;
-    plot(velnums, vals_ref_norm,'-o','LineWidth',1.5,'DisplayName',estrategia_names(1));
+    plot(velnums, vals_ref_norm,'-o','Color',colores(1,:),'LineWidth',1.5,'DisplayName',estrategia_names(1));
     
     i = 2;
     for e = 1:length(estrategias)
-        plot(velnums, vals_cmp_norm(e,:),'-s','LineWidth',1.5,'DisplayName',estrategia_names(i));
+        plot(velnums, vals_cmp_norm(e,:),'-s','Color',colores(i,:),'LineWidth',1.5,'DisplayName',estrategia_names(i));
         i = i + 1;
     end
     
@@ -109,7 +115,7 @@ end
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd.png','Resolution',300);
 %T26: exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/DEL_ponderado_comp_estrategias_norm_24_sd_komega2.png','Resolution',300);
 
-%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_DEL_ponderado_comp_estrategias_norm_24_sd_komega2_journal.png', turbine),'Resolution',300);
+%exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_DEL_ponderado_comp_estrategias_norm_24_sd_komega2_journal.png', turbine),'Resolution',300);
 %% Energia inyectada en 5s respecto a op normal
 clc;
 duracion_user = 10; % segundos de la ventana (puede ser 5 o 10, por ejemplo)
@@ -164,13 +170,13 @@ fs_en = 17;
 hb = bar(velocidades, Ener_rel_all, 'grouped');
 
 % Definir rojo y naranja
-colores = [0.9 0 0; 
-           0.9290 0.6940 0.1250;
-           1 1 0];  %agrega FG 30/09
+% colores = [0.9 0 0; 
+%            0.9290 0.6940 0.1250;
+%            1 1 0];  %agrega FG 30/09
 
 % Asignar color a cada estrategia (columna)
 for e = 1:size(Ener_rel_all,2)
-    hb(e).FaceColor = colores(e,:);
+    hb(e).FaceColor = colores(e+1,:);
 end
 ylabel('Relative $\mathrm{E}_{\mathrm{injected}}$ [\%]','FontSize',fs_en,'Interpreter','latex');
 xlabel('$v$ [m/s]','FontSize',fs_en,'Interpreter','latex');
@@ -178,7 +184,7 @@ xlabel('$v$ [m/s]','FontSize',fs_en,'Interpreter','latex');
 %      'FontSize',fs+2,'Interpreter','latex');
 set(gca,'TickLabelInterpreter','latex','FontSize',fs_en);
 %legend('SW','TL','Location','northeast','FontSize',fs-4,'Interpreter','latex');
-legend('SW','TL','GMFC','Location','northeast','FontSize',fs-4,'Interpreter','latex');
+legend('SW','TL','PS','Location','northeast','FontSize',fs-4,'Interpreter','latex');
 
 grid on;
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/Energia_inyectada_%ds_media_seed.png',duracion_user),'Resolution',300);
@@ -186,6 +192,8 @@ grid on;
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026_FINAL/Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png', duracion_user),'Resolution',300);
 
 %exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png',turbine, duracion_user),'Resolution',300);
+%%
+%exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_Energia_inyectada_%ds_media_seed_24_withGMFC.png',turbine, duracion_user),'Resolution',300);
 
 %% --- Boxplots por variable y estrategia ajustando alturas ---
 clc;
@@ -199,7 +207,12 @@ estrategias    = [ "Norm_op","Tarnowski","Wang","GMFC"];   % estrategias a compa
 estrategia_names = ["NO", "SW", "TL","GMFC"];
 
 nVar = length(variables);
-colors = lines(length(estrategias)); % colores distintos para estrategias
+%colors = lines(length(estrategias)); % colores distintos para estrategias
+% Definir rojo y naranja
+% colores = [	0 0.4470 0.7410; 0.9 0 0; 
+%            0.9290 0.6940 0.1250;
+%            1 1 0];  %agrega FG 30/09
+
 offset = 0.26; % desplazamiento para separar estrategias
 linewidth = 1.5; % grosor de líneas
 velnums_tmp = str2double(strrep(velocidades_names, "_", "."));
@@ -251,14 +264,14 @@ for vvar = 1:nVar
         h = boxplot(data_vec, group_vec, ...
             'Positions', positions, ...
             'Whisker', Inf, ...
-            'Colors', colors(e,:), ...
-            'Widths', 0.23, ...   % ancho mayor para que se vea más
+            'Colors', colores(e,:), ...
+            'Widths', 0.23, ...   % ancho mayor para que se vea más 0.23
             'Symbol', 'k+');
 
         % --- Rellenar cajas ---
         boxes = findobj(h, 'Tag', 'Box');
         for j = 1:length(boxes)
-            patch(get(boxes(j),'XData'), get(boxes(j),'YData'), colors(e,:), ...
+            patch(get(boxes(j),'XData'), get(boxes(j),'YData'), colores(e,:), ...
                 'FaceAlpha', 1, 'EdgeColor', 'k');
         end
 
@@ -280,7 +293,7 @@ for vvar = 1:nVar
     if vvar == 3
         lgd_handles = gobjects(length(estrategias),1);
         for e = 1:length(estrategias)
-            lgd_handles(e) = plot(NaN, NaN, 's', 'MarkerFaceColor', colors(e,:), 'MarkerEdgeColor', colors(e,:));
+            lgd_handles(e) = plot(NaN, NaN, 's', 'MarkerFaceColor', colores(e,:), 'MarkerEdgeColor', colores(e,:));
         end
         legend(lgd_handles, estrategia_names, 'Location','best','Interpreter','latex');
     end
@@ -289,4 +302,116 @@ end
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png','Resolution',300);
 
-%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);
+exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);
+
+
+%%
+%% --- Boxplots por variable y estrategia ajustando alturas ---
+clc;
+figure('Units','normalized','OuterPosition',[0 0 1 1]); 
+set(gcf,'Color','w'); 
+
+estrategias    = [ "Norm_op","Tarnowski","Wang","GMFC"];   % estrategias a comparar
+estrategia_names = ["NO", "SW", "TL","PS"];
+fs = 22;
+nVar = length(variables);
+
+% --- FIX: Reduced offset so strategies stay together, increased spacing between wind bins
+offset = 0.2; % Small offset keeps strategies clustered
+linewidth = 1.5;
+box_width = 0.18;
+velnums_tmp = str2double(strrep(velocidades_names, "_", "."));
+
+% --- Tiledlayout con control de alturas
+t = tiledlayout(2,3,'TileSpacing','compact','Padding','compact');
+
+for vvar = 1:nVar
+    nexttile;
+    var      = variables{vvar};
+    varname  = varnames{vvar};
+    hold on; grid on; box on;
+    
+    title(varname,'FontWeight','bold','Interpreter','latex','FontSize',fs);
+    xlabel('$v$ [m/s]','Interpreter','latex','FontSize',fs);
+    ylabel('Extreme value [kNm]','Interpreter','latex','FontSize',fs);
+
+    ylim_min = inf;
+    ylim_max = -inf;
+    
+    for e = 1:length(estrategias)
+        estrategia = estrategias{e};
+        data_vec = [];
+        group_vec = [];
+        
+        for v = 1:length(velocidades)
+            vel_field = "V" + velocidades_names(v);
+            seeds_vals = [];
+
+            for sd = 1:length(seeds)
+                sd_field = seeds(sd);
+                if isfield(Maxs.(estrategia).(vel_field), sd_field)
+                    seeds_vals = [seeds_vals, Maxs.(estrategia).(vel_field).(sd_field{1}).(var)];
+                end
+            end
+            
+            data_vec  = [data_vec, seeds_vals];
+            group_vec = [group_vec, repmat(v,1,length(seeds_vals))];
+            
+            if ~isempty(seeds_vals)
+                ylim_min = min([ylim_min, min(seeds_vals)]);
+                ylim_max = max([ylim_max, max(seeds_vals)]);
+            end
+        end
+
+        % --- FIX: Positions - strategies clustered at each wind speed bin
+        base_positions = unique(group_vec);
+        % Offset strategies slightly within the same bin
+        positions = base_positions + (e - (length(estrategias)+1)/2) * offset;
+
+        % --- Boxplot
+        h = boxplot(data_vec, group_vec, ...
+            'Positions', positions, ...
+            'Whisker', Inf, ...
+            'Colors', colores(e,:), ...
+            'Widths', box_width, ...
+            'Symbol', 'k+');
+
+        % --- Rellenar cajas (NO FaceAlpha change)
+        boxes = findobj(h, 'Tag', 'Box');
+        for j = 1:length(boxes)
+            patch(get(boxes(j),'XData'), get(boxes(j),'YData'), colores(e,:), ...
+                'FaceAlpha', 1, 'EdgeColor', 'k');
+        end
+
+        % --- Mediana negra visible
+        meds = findobj(h, 'Tag', 'Median');
+        for j = 1:length(meds)
+            xMed = get(meds(j),'XData');
+            yMed = get(meds(j),'YData');
+            plot(xMed, yMed, 'k-', 'LineWidth', 1.5);
+        end
+
+        set(h,'LineWidth',linewidth);
+    end
+
+    % --- FIX: Increase spacing between wind speed bins by adjusting XTick spacing
+    % Instead of 1,2,3,4,5 spacing, create actual positions with gaps
+    wind_bin_centers = 1:length(velocidades);
+    % Add visual separation by setting XLim slightly wider
+    set(gca, 'XTick', wind_bin_centers, 'XTickLabel', velnums_tmp, ...
+             'FontSize', fs, 'TickLabelInterpreter', 'latex');
+    
+    % Increase x-limits to create breathing room between bins
+    xlim([0.5, length(velocidades) + 0.5]);
+    
+    ylim([ylim_min, ylim_max]);
+    
+    % --- Legend solo en primer subplot
+    if vvar == 3
+        lgd_handles = gobjects(length(estrategias),1);
+        for e = 1:length(estrategias)
+            lgd_handles(e) = plot(NaN, NaN, 's', 'MarkerFaceColor', colores(e,:), 'MarkerEdgeColor', colores(e,:));
+        end
+        legend(lgd_handles, estrategia_names, 'Location','best','Interpreter','latex');
+    end
+end

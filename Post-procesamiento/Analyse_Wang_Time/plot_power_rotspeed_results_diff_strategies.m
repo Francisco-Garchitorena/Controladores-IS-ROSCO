@@ -2,7 +2,7 @@ addpath ../
 %% Parámetros
 Turbine = "IEA3p4MW"; %         
 turbine_base_name = "IEA-3.4-130-RWT"; %  
-base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
+base_path = "E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
 
 % Velocidades, TI y semilla
 velocidades = [8.0];
@@ -12,7 +12,7 @@ uBEM_Tarnowski = load('../uBEM/Tarnowski_U-8ms_uniform_start-100s_step-1.1_recov
 uBEM_Wang = load('../uBEM/Wang_U-8ms_uniform_start-100s_OmegaMin-0.4Rated.mat','uBEM');
 
 % Estrategias
-estrategias = {'Wang','Tarnowski'};
+estrategias = {'Wang','Tarnowski','GMFC'};
 
 % Variables a analizar
 variables = {'GenTq','GenSpeed','RotPwr'};
@@ -98,17 +98,22 @@ Prated = 3.438776e6;    % Rated Power [W]
 Mgen_rated = Prated / OmRated; % Rated generator torque [Nm]
 Mgen_max   = Mgen_rated * 1.09; % Maximum generator torque [Nm]
 
+colores = [ 0.9 0 0; 
+           0.9290 0.6940 0.1250;
+           0 0.4470 0.7410];  % yellow
 
 Mgen_prime = 10 * 15000.0  * 97;  % Maximum torque rate operation [Nm/s] -> Increase by x10 (= not used) 
-plot(uBEM_Tarnowski.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Tarnowski.uBEM.GeneratorTorque(499:1000).*uBEM_Tarnowski.uBEM.RotorSpeed(499:1000)./(1e6),'g', 'LineWidth', linesize)
-plot(uBEM_Wang.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Wang.uBEM.GeneratorTorque(499:1000).*uBEM_Wang.uBEM.RotorSpeed(499:1000)./(1e6),'r', 'LineWidth', linesize)
+% plot(uBEM_Tarnowski.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Tarnowski.uBEM.GeneratorTorque(499:1000).*uBEM_Tarnowski.uBEM.RotorSpeed(499:1000)./(1e6),'g', 'LineWidth', linesize)
+% plot(uBEM_Wang.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Wang.uBEM.GeneratorTorque(499:1000).*uBEM_Wang.uBEM.RotorSpeed(499:1000)./(1e6),'r', 'LineWidth', linesize)
+plot(uBEM_Tarnowski.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Tarnowski.uBEM.GeneratorTorque(499:1000).*uBEM_Tarnowski.uBEM.RotorSpeed(499:1000)./(1e6),'Color',colores(1,:), 'LineWidth', linesize)
+plot(uBEM_Wang.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Wang.uBEM.GeneratorTorque(499:1000).*uBEM_Wang.uBEM.RotorSpeed(499:1000)./(1e6),'Color',colores(2,:), 'LineWidth', linesize)
 plot([OmegaMin*30/pi OmegaMin*30/pi],[0 4],'k--', 'LineWidth', linesize)
 plot([OmRated*0.703*30/pi OmRated*0.703*30/pi],[0 4],'b--', 'LineWidth', linesize)
 plot(OmegaAll*30/pi, OmegaAll.*Mgen_max/1e6, 'LineWidth', linesize)
 %plot([time3(Itim_SI) time3(Itim_SI)],[min_power max_power],'k--', 'LineWidth', linesize)
 
-xlabel('Rotor Speed (RPM)','interpreter','latex')
-ylabel('$P_{\mathrm{gen}}$ (MW)','interpreter','latex')
+xlabel('Rotor Speed','interpreter','latex')
+ylabel('Electrical and aerodynamical powers','interpreter','latex')
 ax = gca; % Size Axis
 set(gca,'TickLabelInterpreter','latex')
 ax.FontSize = sizenumaxis; % Size Axis 2.0
@@ -123,8 +128,10 @@ colormap(prism);
 grid on;
 box on
 hold off
-title({'$\textbf{IC strategies}$'},'FontSize',titlesize,'interpreter','latex')
-exportgraphics(gcf,'../Fatigue_analysis/Imagenes/Torque_2026/P_omega_strategies.png','Resolution',300);
+set(gca, 'XTickLabel', []);
+set(gca, 'YTickLabel', []);
+%title({'$\textbf{IC strategies}$'},'FontSize',titlesize,'interpreter','latex')
+%exportgraphics(gcf,'../Fatigue_analysis/Imagenes/Torque_2026/P_omega_strategies.png','Resolution',300);
 
 
 % xlabel('$Rotor Speed$ [RPM]')
@@ -133,3 +140,79 @@ exportgraphics(gcf,'../Fatigue_analysis/Imagenes/Torque_2026/P_omega_strategies.
 %         'Sim-7m/s','Sim-8m/s','Sim-9m/s'},'Location','northwest')
 % grid on; box on
 % title('\textbf{Potencia vs RPM}','FontSize',14)
+
+
+%%
+%% ============================================================
+% GMFC Strategy - Controlled Kinetic Energy Extraction
+% (Recovery with Tarnowski 2009 estimator)
+% ============================================================
+
+% --- Parameters for GMFC trajectory ---
+v_gmfc = 8.0;                           % Wind speed [m/s]
+Omega_in = OmRated * 0.8464;               % Starting speed (95% of rated, adjust as needed)
+Omega_obj = OmRated * 0.703;             % Target speed (70% rated, matches your dashed blue line)
+Delta_T_over = 10.0;                     % Time window for deceleration [s]
+J_rotor = 2.8757e+07;                         % Rotor inertia [kg·m²] - adjust to your turbine
+
+% --- Compute target deceleration (Eq. \ref{eq:GMFC_kinematics}) ---
+Omega_dot_obj = (Omega_obj - Omega_in) / Delta_T_over;   % rad/s²
+
+% --- Generate trajectory points ---
+n_points = 200;
+Omega_gmfc = linspace(Omega_in, Omega_obj, n_points/2);   % Deceleration phase
+
+% Aerodynamic torque along the deceleration path
+TSR_gmfc = Omega_gmfc .* R ./ v_gmfc;
+Cp_gmfc = interp1(Cp_lambda(:,1), Cp_lambda(:,2), TSR_gmfc, 'linear', 'extrap');
+P_aero_gmfc = 0.5 * rho * pi * R^2 * v_gmfc^3 .* Cp_gmfc;
+T_aero_gmfc = P_aero_gmfc ./ Omega_gmfc;
+
+% Generator torque during deceleration (Eq. \ref{eq:gen_torque})
+T_gen_gmfc = T_aero_gmfc - J_rotor * Omega_dot_obj;
+
+% Electrical power during deceleration
+P_gen_gmfc = T_gen_gmfc .* Omega_gmfc;
+
+% --- Recovery phase (Tarnowski 2009 estimator behavior) ---
+% Recovery starts at Omega_obj and returns to MPPT curve
+Omega_rec = linspace(Omega_obj, 9.77*pi/30, n_points/2);
+
+% Tarnowski recovery: power dips below MPPT and asymptotically returns
+% We model this as a smooth transition from T_gen(Omega_obj) back to MPPT
+TSR_rec = Omega_rec .* R ./ v_gmfc;
+Cp_rec = interp1(Cp_lambda(:,1), Cp_lambda(:,2), TSR_rec, 'linear', 'extrap');
+P_mppt_rec = 0.5 * rho * pi * R^2 * v_gmfc^3 .* Cp_rec;
+
+% Recovery power: starts below MPPT, merges back smoothly
+% Using a exponential-like recovery curve
+recovery_factor = (Omega_rec - Omega_obj) / (OmRated - Omega_obj);
+recovery_factor = recovery_factor .^ 0.7;   % Shape the recovery curve
+
+P_gen_start = T_gen_gmfc(end) * Omega_obj;  % Power at end of deceleration
+P_gen_rec = P_gen_start + (P_mppt_rec - P_gen_start) .* recovery_factor;
+
+% Ensure recovery power dips slightly below MPPT initially (Tarnowski characteristic)
+dip_factor = 1 - 0.15 * exp(-3 * recovery_factor);   % 15% dip decaying exponentially
+P_gen_rec = P_mppt_rec .* dip_factor;
+%LocalVar%Pmec_est - (CntrPar%VS_RtPwr * CntrPar%Frecovery
+%P_gen_rec = P_mppt_rec - (3370000*0.04);
+
+% --- Combine phases ---
+Omega_gmfc_full = [Omega_gmfc, Omega_rec(2:end)];
+P_gen_gmfc_full = [P_gen_gmfc, P_gen_rec(2:end)];
+
+% Convert to RPM and MW for plotting
+Omega_rpm_gmfc = Omega_gmfc_full * 30 / pi;
+P_MW_gmfc = P_gen_gmfc_full / 1e6;
+
+% --- Plot GMFC strategy ---
+hold on; plot(Omega_rpm_gmfc, P_MW_gmfc,'Color',colores(3,:), 'LineWidth', 2.5,'DisplayName','Proposed strategy');
+% For dashed version: plot(Omega_rpm_gmfc, P_MW_gmfc, 'm--', 'LineWidth', 2.0);
+
+%% ============================================================
+% Optional: Mark key points on the trajectory
+% ============================================================
+% hold on;
+% plot(Omega_in*30/pi, P_gen_gmfc(1)/1e6, 'mo', 'MarkerSize', 8, 'MarkerFaceColor', 'm');
+% plot(Omega_obj*30/pi, P_gen_gmfc(end)/1e6, 'ms', 'MarkerSize', 8, 'MarkerFaceColor', 'm');

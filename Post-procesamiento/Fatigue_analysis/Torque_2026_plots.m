@@ -112,7 +112,7 @@ end
 %exportgraphics(gcf,sprintf('Imagenes/Journal/%s_DEL_ponderado_comp_estrategias_norm_24_sd_komega2_journal.png', turbine),'Resolution',300);
 %% Energia inyectada en 5s respecto a op normal
 clc;
-duracion_user = 100; % segundos de la ventana (puede ser 5 o 10, por ejemplo)
+duracion_user = 10; % segundos de la ventana (puede ser 5 o 10, por ejemplo)
 dur_field = "Dur" + string(duracion_user) + "s";
 
 estrategias_SI = estrategias;%(2:end); % estrategias con inercia (sin Norm_op)
@@ -178,14 +178,14 @@ xlabel('$v$ [m/s]','FontSize',fs_en,'Interpreter','latex');
 %      'FontSize',fs+2,'Interpreter','latex');
 set(gca,'TickLabelInterpreter','latex','FontSize',fs_en);
 %legend('SW','TL','Location','northeast','FontSize',fs-4,'Interpreter','latex');
-%legend('SW','TL','GMFC','Location','northeast','FontSize',fs-4,'Interpreter','latex');
+legend('SW','TL','GMFC','Location','northeast','FontSize',fs-4,'Interpreter','latex');
 
 grid on;
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/Energia_inyectada_%ds_media_seed.png',duracion_user),'Resolution',300);
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026/24_semillas/Energia_inyectada_%ds_media_seed_24_sd_WITH_GMFC.png',duracion_user),'Resolution',300);
 %exportgraphics(gcf,sprintf('Imagenes/Torque_2026_FINAL/Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png', duracion_user),'Resolution',300);
-
-%exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png',turbine, duracion_user),'Resolution',300);
+%%
+exportgraphics(gcf,sprintf('Imagenes/Journal/%s_Energia_inyectada_%ds_media_seed_24_sd_komega2_journal.png',turbine, duracion_user),'Resolution',300);
 
 %% --- Boxplots por variable y estrategia ajustando alturas ---
 clc;

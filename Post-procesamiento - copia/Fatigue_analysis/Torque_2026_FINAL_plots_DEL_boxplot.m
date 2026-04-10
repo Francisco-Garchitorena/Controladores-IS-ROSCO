@@ -4,7 +4,8 @@ clear; clc; %close all;
 % === Cargar resultados ===
 %load DELs_Max_means_per_seed_24_seeds
 %load DELs_Max_means_per_seed_24_seeds_with_komega2_controller.mat
-load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat;
+%load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal.mat;
+load IEA3p4MW_DELs_Max_means_per_seed_compare_DeltaTover_GMFCstrat.mat;
 name = '24 seeds';
 
 % === Definir estrategias y variables ===
