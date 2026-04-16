@@ -13,8 +13,8 @@ Vstr  = "8.0";
 TI    = "TI8.0";
 
 % Estrategias a comparar
-estrategias = {'Norm_op','Tarnowski', 'Wang'};%,'GMFC'};
-estrategia_names = {'Normal operation','Stepwise','Torque-limit'};%,'GMFC'};
+estrategias = {'Norm_op','Tarnowski', 'Wang','GMFC'};
+estrategia_names = {'Normal operation','Stepwise','Torque-limit','Proposed strategy'};
 
 % Variable a graficar (solo potencia)
 op_variable = "GenPwr";   % Potencia generada "RotSpeed";
@@ -25,7 +25,9 @@ op_ylabel   = "[kW]"; %"[rpm]";
 start_end = [340 550]; % [s]
 idx_trans = start_end(1)/0.00625;
 fontsize = 14;
-
+colores = [0.4660 0.6740 0.1880; 0.9 0 0; 
+           0.9290 0.6940 0.1250;
+           0 0.4470 0.7410]; 
 %% Paths de simulación
 base_path = "E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine;
 
@@ -67,7 +69,7 @@ for i = 1:nSeeds
     for e = 1:length(estrategias)
         idx = find(strcmp(ChanName{e,i}, op_variable));
         plot(Channels{e,i}(idx_trans:end,1), Channels{e,i}(idx_trans:end,idx), ...
-            'LineWidth', 2, 'DisplayName',estrategia_names{e});
+            'Color',colores(e,:),'LineWidth', 2, 'DisplayName',estrategia_names{e});
     end
     xline(360,'LineWidth',1.5,'LineStyle','--','HandleVisibility','off');
     title(sprintf('Seed %d',sd+1),'Interpreter','latex','FontSize',fs-4);
@@ -85,4 +87,5 @@ ylabel(t, sprintf('%s %s',op_varname,op_ylabel),'Interpreter','latex','FontSize'
  %   'Interpreter','latex','FontSize',16);
  
 %%
-exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026_FINAL/Comparacion_Potencia_v%s_%s_komega2.png',Vstr,TI), 'Resolution', 300);
+%exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Torque_2026_FINAL/Comparacion_Potencia_v%s_%s_komega2.png',Vstr,TI), 'Resolution', 300);
+exportgraphics(gcf, sprintf('Fatigue_analysis/Imagenes/Journal_final/Comparacion_Potencia_v%s_%s_komega2.png',Vstr,TI), 'Resolution', 300);

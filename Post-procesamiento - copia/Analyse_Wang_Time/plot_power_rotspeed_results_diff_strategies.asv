@@ -107,13 +107,14 @@ Mgen_prime = 10 * 15000.0  * 97;  % Maximum torque rate operation [Nm/s] -> Incr
 % plot(uBEM_Wang.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Wang.uBEM.GeneratorTorque(499:1000).*uBEM_Wang.uBEM.RotorSpeed(499:1000)./(1e6),'r', 'LineWidth', linesize)
 plot(uBEM_Tarnowski.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Tarnowski.uBEM.GeneratorTorque(499:1000).*uBEM_Tarnowski.uBEM.RotorSpeed(499:1000)./(1e6),'Color',colores(1,:), 'LineWidth', linesize)
 plot(uBEM_Wang.uBEM.RotorSpeed(499:1000).*30./pi,uBEM_Wang.uBEM.GeneratorTorque(499:1000).*uBEM_Wang.uBEM.RotorSpeed(499:1000)./(1e6),'Color',colores(2,:), 'LineWidth', linesize)
+
 plot([OmegaMin*30/pi OmegaMin*30/pi],[0 4],'k--', 'LineWidth', linesize)
 plot([OmRated*0.703*30/pi OmRated*0.703*30/pi],[0 4],'b--', 'LineWidth', linesize)
 plot(OmegaAll*30/pi, OmegaAll.*Mgen_max/1e6, 'LineWidth', linesize)
 %plot([time3(Itim_SI) time3(Itim_SI)],[min_power max_power],'k--', 'LineWidth', linesize)
 
-xlabel('Rotor Speed (RPM)','interpreter','latex')
-ylabel('Electrical and aerodyn','interpreter','latex')
+xlabel('Rotor Speed','interpreter','latex')
+ylabel('Electrical and aerodynamical powers','interpreter','latex')
 ax = gca; % Size Axis
 set(gca,'TickLabelInterpreter','latex')
 ax.FontSize = sizenumaxis; % Size Axis 2.0
@@ -128,8 +129,8 @@ colormap(prism);
 grid on;
 box on
 hold off
-xticks = '';
-yticks = ''
+set(gca, 'XTickLabel', []);
+set(gca, 'YTickLabel', []);
 %title({'$\textbf{IC strategies}$'},'FontSize',titlesize,'interpreter','latex')
 %exportgraphics(gcf,'../Fatigue_analysis/Imagenes/Torque_2026/P_omega_strategies.png','Resolution',300);
 

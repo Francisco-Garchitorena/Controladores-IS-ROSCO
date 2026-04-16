@@ -2,15 +2,15 @@ addpath ../
 %% Parámetros
 Turbine = "IEA3p4MW"; %         
 turbine_base_name = "IEA-3.4-130-RWT"; %  
-base_path = "E:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
+base_path = "C:/Users/fgarchitorena/Proyectos_de_investigacion/FSE_Incercia_Sintetica/Controladores-IS-ROSCO/Torque_2026_" + Turbine + "_24_seeds";
 
 % Velocidades, TI y semilla
-velocidades = [7.0, 8.0, 9.0]; velocidades = [7.5, 8.5, 9.5];
+velocidades = [7.0, 8.0, 9.0];
 TI = "TI8.0";
 sd = "sd0";
 
 % Estrategias
-estrategias = {'GMFC','Tarnowski','Wang'};
+estrategias = {'Wang'};
 
 % Variables a analizar
 variables = {'GenTq','GenSpeed','RotPwr'};
@@ -100,7 +100,7 @@ for i = 1:length(velocidades)
         OmegaSim = tSeries(:,idxOmega);  % rad/s
         GenTq     = tSeries(:,idxGenTq);    % W
         
-        plot(OmegaSim(start_IS:end_IS)/97, GenTq(start_IS:end_IS).*OmegaSim(start_IS:end_IS)*pi/30/97/1e3, cols{i}, 'LineWidth',1.5); hold on;
+        plot(OmegaSim(start_IS:end_IS)/97, GenTq(start_IS:end_IS).*OmegaSim(start_IS:end_IS)*pi/30/97/1e3, cols{i}, 'LineWidth',1.5);
     end
 end
 

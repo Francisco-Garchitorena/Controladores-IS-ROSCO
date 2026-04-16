@@ -554,15 +554,21 @@ metrics_names = { ...
     'duration', ...
     'drop_pct_pre_dist'};
     %'drop_pct_to_rtd'};
-GridCodes.BRA.name = 'Brazil';
+GridCodes.BRA.name = 'ONS';
 GridCodes.BRA.min_power_pct = 0.1;
 GridCodes.BRA.min_duration_s = 5;
 GridCodes.BRA.max_response_delay_s = NaN;
 GridCodes.BRA.max_post_drop_pct = NaN;
 
-GridCodes.BRA.color  = 'g--';
-GridCodes.IESO.color = 'k--';
-GridCodes.HQ.color   = 'b--';
+% GridCodes.BRA.color  = 'g--';
+GridCodes.BRA.color = [1 0.5 1];  
+GridCodes.BRA.linestyle = '--';
+GridCodes.IESO.linestyle = '--';
+
+GridCodes.HQ.linestyle = '--';
+
+GridCodes.IESO.color = 'k';
+GridCodes.HQ.color   = 'b';
 
 metrics_labels = { ...
     'Maximum active power contribution ($\% \mathrm{P}_\mathrm{nom}$)', ...
@@ -662,7 +668,7 @@ for im = 1:nMetrics
         
         % ==== GRID CODE LINES ====
         codes = fieldnames(GridCodes);
-        legend('Location','northwest','FontSize',fs-2,'Interpreter','latex')
+        % legend('Location','northwest','FontSize',fs-2,'Interpreter','latex')
     else
         % ==== POSICIONES X ====
         x = velocidades;     % valores reales (7.5,8,8.5,...)
@@ -688,6 +694,7 @@ for im = 1:nMetrics
         
         % ==== GRID CODE LINES ====
         codes = fieldnames(GridCodes);
+        if im==1 legend('Location','northeast','FontSize',fs-2,'Interpreter','latex'); end
     end
 
     for ic = 1:numel(codes)
@@ -711,21 +718,26 @@ for im = 1:nMetrics
                     y_line = interp1(x, req_list, x_line, 'linear', 'extrap');   %interpolo para que me muestre desde 0.5 antes que 7.5 (puramente visual).
                     
                     % Plot
-                    plot(x_line, y_line*100,GridCodes.(codes{ic}).color, 'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
+                    plot(x_line, y_line*100,'Color', GridCodes.(codes{ic}).color,'LineStyle', GridCodes.(codes{ic}).linestyle,'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
 
                 else
                     req = 100*G.min_power_pct;
-                    plot([min(x)-0.5 max(x)+0.5],[req req],...
-                         GridCodes.(codes{ic}).color,'LineWidth',1.3,...
-                         'DisplayName',GridCodes.(codes{ic}).name);
+                                       
+                    plot([min(x)-0.5 max(x)+0.5], [req req], ...
+                        'Color', GridCodes.(codes{ic}).color, ...
+                        'LineStyle', GridCodes.(codes{ic}).linestyle, ...
+                        'LineWidth', 1.3, ...
+                        'DisplayName', GridCodes.(codes{ic}).name);
                 end
                 
             case 'duration'
                 req = G.min_duration_s;
-                plot([min(x)-0.5 max(x)+0.5],[req req],...
-                     GridCodes.(codes{ic}).color,'LineWidth',1.3,...
-                     'DisplayName',GridCodes.(codes{ic}).name);
-                ylim([0 22.1]);
+                    
+                    plot([min(x)-0.5 max(x)+0.5], [req req], ...
+                        'Color', GridCodes.(codes{ic}).color, ...
+                        'LineStyle', GridCodes.(codes{ic}).linestyle, ...
+                        'LineWidth', 1.3, ...
+                        'DisplayName', GridCodes.(codes{ic}).name);                ylim([0 22.1]);
                 
             case "drop_pct_to_rtd" 
                 if codes{ic} == "IESO"
@@ -744,16 +756,19 @@ for im = 1:nMetrics
                     y_line = interp1(x, req_list, x_line, 'linear', 'extrap');   %interpolo para que me muestre desde 0.5 antes que 7.5 (puramente visual).
                     
                     % Plot
-                    plot(x_line, y_line*100,GridCodes.(codes{ic}).color, 'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
+                    plot(x_line, y_line*100, 'Color', GridCodes.(codes{ic}).color,'LineStyle', GridCodes.(codes{ic}).linestyle, 'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
 
                 else
-                    req = 100*G.max_post_drop_pct;
-                    plot([min(x)-0.5 max(x)+0.5],[req req],...
-                         GridCodes.(codes{ic}).color,'LineWidth',1.3,...
-                         'DisplayName',GridCodes.(codes{ic}).name);
+                   req = 100*G.max_post_drop_pct;
+                    
+                    plot([min(x)-0.5 max(x)+0.5], [req req], ...
+                        'Color', GridCodes.(codes{ic}).color, ...
+                        'LineStyle', GridCodes.(codes{ic}).linestyle, ...
+                        'LineWidth', 1.3, ...
+                        'DisplayName', GridCodes.(codes{ic}).name);
                 end
+              case "drop_pct_pre_dist"
 
-                case "drop_pct_pre_dist"
                 if codes{ic} == "IESO"
                     req_list = [];
                     for i = 1:length(velocidades)
@@ -770,13 +785,17 @@ for im = 1:nMetrics
                     y_line = interp1(x, req_list, x_line, 'linear', 'extrap');   %interpolo para que me muestre desde 0.5 antes que 7.5 (puramente visual).
                     
                     % Plot
-                    plot(x_line, y_line*100,GridCodes.(codes{ic}).color, 'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
+                    plot(x_line, y_line*100,'Color', GridCodes.(codes{ic}).color,'LineStyle', GridCodes.(codes{ic}).linestyle, 'LineWidth',1.3, 'DisplayName', GridCodes.(codes{ic}).name);
 
                 else
                     req = 100*G.max_post_drop_pct;
-                    plot([min(x)-0.5 max(x)+0.5],[req req],...
-                         GridCodes.(codes{ic}).color,'LineWidth',1.3,...
-                         'DisplayName',GridCodes.(codes{ic}).name);
+                                        
+                    plot([min(x)-0.5 max(x)+0.5], [req req], ...
+                        'Color', GridCodes.(codes{ic}).color, ...
+                        'LineStyle', GridCodes.(codes{ic}).linestyle, ...
+                        'LineWidth', 1.3, ...
+                        'DisplayName', GridCodes.(codes{ic}).name);
+                    ylim([0 22])
                 end
         end
     end

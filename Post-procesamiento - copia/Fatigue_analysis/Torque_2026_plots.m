@@ -7,7 +7,7 @@ clear;  close all;
 load NREL5MW_DELs_Max_means_per_seed_24_seeds_with_komega2_controller_journal_with_GMFC_strat.mat;
 name = '24 seeds';
 %% DELS COMP NORMALIZADO
-turbine = "NREL5MW"; %"IEA3p4MW";%
+turbine = "NREL5MW"; %"IEA3p4MW";%"NREL5MW"; %
 estrategia_ref = "Norm_op";   % referencia
 estrategias    = [ "Tarnowski","Wang","GMFC"];   % estrategias a comparar
 %estrategia_names = ["Normal operation", "StepWise strategy", "Torque limit strategy", "GMFC"];
@@ -24,9 +24,9 @@ fs = 22;
 % colores = [0 0.4470 0.7410; 0.9 0 0; 
 %            0.9290 0.6940 0.1250;
 %            1 0.87 0.10];  % yellow
-colores = [1 0.87 0.10; 0.9 0 0; 
+colores = [0.4660 0.6740 0.1880; 0.9 0 0; 
            0.9290 0.6940 0.1250;
-           0 0.4470 0.7410];  % yellow
+           0 0.4470 0.7410]; 
 % === Cargar resultados ===
 vels = fieldnames(DELs_ponderados_seed.(estrategia_ref));  % velocidades disponibles
 
@@ -97,7 +97,7 @@ for vvar = 1:length(variables)
     ylims_all = [ylims_all; ylim];
     
     if vvar== 3
-        legend('Location','best','Fontsize',fs-3,'Interpreter','latex');
+        legend('Location','northwest','Fontsize',fs-3,'Interpreter','latex');
 
     end
 end
@@ -115,6 +115,7 @@ end
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/DEL_ponderado_comp_estrategias_norm_24_sd.png','Resolution',300);
 %T26: exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/DEL_ponderado_comp_estrategias_norm_24_sd_komega2.png','Resolution',300);
 
+%Journal:
 %exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_DEL_ponderado_comp_estrategias_norm_24_sd_komega2_journal.png', turbine),'Resolution',300);
 %% Energia inyectada en 5s respecto a op normal
 clc;
@@ -302,7 +303,7 @@ end
 %exportgraphics(gcf,'Imagenes/Torque_2026/24_semillas/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd.png','Resolution',300);
 %exportgraphics(gcf,'Imagenes/Torque_2026_FINAL/Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png','Resolution',300);
 
-exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);
+%exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);
 
 
 %%
@@ -407,11 +408,13 @@ for vvar = 1:nVar
     ylim([ylim_min, ylim_max]);
     
     % --- Legend solo en primer subplot
-    if vvar == 3
+    if vvar == 1
         lgd_handles = gobjects(length(estrategias),1);
         for e = 1:length(estrategias)
             lgd_handles(e) = plot(NaN, NaN, 's', 'MarkerFaceColor', colores(e,:), 'MarkerEdgeColor', colores(e,:));
         end
-        legend(lgd_handles, estrategia_names, 'Location','best','Interpreter','latex');
+        legend(lgd_handles, estrategia_names, 'Location','southeast','Interpreter','latex');
     end
 end
+
+%exportgraphics(gcf,sprintf('Imagenes/Journal_final/%s_Boxplot_Max_ponderado_comp_estrategias_con_boxplot_24_sd_komega2_journal.png',turbine),'Resolution',300);
